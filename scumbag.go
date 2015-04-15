@@ -16,7 +16,7 @@ var (
 	quit = make(chan bool)
 )
 
-type Scumbot struct {
+type Scumbag struct {
 	Client *irc.Conn
 	Config *BotConfig
 }
@@ -27,19 +27,19 @@ type DatabaseConfig struct {
 }
 
 type BotConfig struct {
-	Name     string "scumbot"
-	Server   string "irc.literat.us:9999"
+	Name     string
+	Server   string
 	Database *DatabaseConfig
 }
 
-func NewBot() *Scumbot {
+func NewBot() *Scumbag {
 	dbConfig := &DatabaseConfig{
 		Name: "scumbag",
 		Host: "localhost",
 	}
 
 	botConfig := &BotConfig{
-		Name:     "scumbot",
+		Name:     "scumbag_go",
 		Server:   "irc.literat.us:9999",
 		Database: dbConfig,
 	}
@@ -54,16 +54,16 @@ func NewBot() *Scumbot {
 
 	clientConfig.NewNick = func(n string) string { return n + "^" }
 
-	bot := Scumbot{Client: irc.Client(clientConfig), Config: botConfig}
+	bot := Scumbag{Client: irc.Client(clientConfig), Config: botConfig}
 	bot.setupHandlers()
 
 	return &bot
 }
 
-func (bot *Scumbot) setupHandlers() {
+func (bot *Scumbag) setupHandlers() {
 	bot.Client.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
-		fmt.Println("-> Connecting to #scumbot")
-		conn.Join("#scumbot")
+		fmt.Println("-> Connecting to #scumbag")
+		conn.Join("#scumbag")
 	})
 
 	bot.Client.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
@@ -75,7 +75,7 @@ func (bot *Scumbot) setupHandlers() {
 }
 
 // Handles normal PRIVMSG lines received from the server.
-func (bot *Scumbot) msgHandler(conn *irc.Conn, line *irc.Line) {
+func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 	time := line.Time
 	nick := line.Nick
 	msg := line.Args[1]
@@ -87,7 +87,7 @@ func (bot *Scumbot) msgHandler(conn *irc.Conn, line *irc.Line) {
 	fmt.Printf("-> URLs: %s\n", urlDatabase)
 }
 
-func (bot *Scumbot) saveURLs(nick string, msg string) {
+func (bot *Scumbag) saveURLs(nick string, msg string) {
 	re := regexp.MustCompile(`((ftp|git|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(?:\/|\/([\w#!:.?+=&%@!\-\/]))?)`)
 
 	if urls := re.FindAllString(msg, -1); urls != nil {
