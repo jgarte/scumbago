@@ -8,32 +8,44 @@ import (
 	irc "github.com/fluffle/goirc/client"
 )
 
-type Scumbot struct {
-	Client *irc.Conn
-	Config map[string]string
-}
-
 var (
 	// TODO: Map to store URLs keyed by nick. Store this in a database.
 	urlDatabase = make(map[string][]string)
-
-	bot Scumbot
 
 	// Channel to handle disconnect.
 	quit = make(chan bool)
 )
 
-func NewBot() Scumbot {
-	fmt.Println("-> Setting up bot...")
+type Scumbot struct {
+	Client *irc.Conn
+	Config *BotConfig
+}
 
-	botConfig := map[string]string{
-		"name":      "scumbot",
-		"database":  "scumbag",
-		"ircServer": "irc.literat.us:9999",
+type DatabaseConfig struct {
+	Name string "scumbag"
+	Host string "localhost"
+}
+
+type BotConfig struct {
+	Name     string "scumbot"
+	Server   string "irc.literat.us:9999"
+	Database *DatabaseConfig
+}
+
+func NewBot() *Scumbot {
+	dbConfig := &DatabaseConfig{
+		Name: "scumbag",
+		Host: "localhost",
 	}
 
-	clientConfig := irc.NewConfig(botConfig["name"])
-	clientConfig.Server = botConfig["ircServer"]
+	botConfig := &BotConfig{
+		Name:     "scumbot",
+		Server:   "irc.literat.us:9999",
+		Database: dbConfig,
+	}
+
+	clientConfig := irc.NewConfig(botConfig.Name)
+	clientConfig.Server = botConfig.Server
 
 	// Setup SSL and skip cert verify.
 	clientConfig.SSL = true
@@ -42,27 +54,13 @@ func NewBot() Scumbot {
 
 	clientConfig.NewNick = func(n string) string { return n + "^" }
 
-	return Scumbot{Client: irc.Client(clientConfig), Config: botConfig}
+	bot := Scumbot{Client: irc.Client(clientConfig), Config: botConfig}
+	bot.setupHandlers()
+
+	return &bot
 }
 
-func main() {
-	fmt.Println("-> Starting...")
-
-	bot = NewBot()
-	setupHandlers()
-
-	if err := bot.Client.Connect(); err != nil {
-		fmt.Printf("Connection error: %s\n", err)
-		quit <- true
-	}
-
-	// Wait for disconnect.
-	<-quit
-}
-
-func setupHandlers() {
-	fmt.Println("-> Setting up handlers...")
-
+func (bot *Scumbot) setupHandlers() {
 	bot.Client.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
 		fmt.Println("-> Connecting to #scumbot")
 		conn.Join("#scumbot")
@@ -73,10 +71,11 @@ func setupHandlers() {
 		quit <- true
 	})
 
-	bot.Client.HandleFunc("PRIVMSG", msgHandler)
+	bot.Client.HandleFunc("PRIVMSG", bot.msgHandler)
 }
 
-func msgHandler(conn *irc.Conn, line *irc.Line) {
+// Handles normal PRIVMSG lines received from the server.
+func (bot *Scumbot) msgHandler(conn *irc.Conn, line *irc.Line) {
 	time := line.Time
 	nick := line.Nick
 	msg := line.Args[1]
@@ -88,7 +87,7 @@ func msgHandler(conn *irc.Conn, line *irc.Line) {
 	fmt.Printf("-> URLs: %s\n", urlDatabase)
 }
 
-func (b Scumbot) saveURLs(nick string, msg string) {
+func (bot *Scumbot) saveURLs(nick string, msg string) {
 	re := regexp.MustCompile(`((ftp|git|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(?:\/|\/([\w#!:.?+=&%@!\-\/]))?)`)
 
 	if urls := re.FindAllString(msg, -1); urls != nil {
@@ -111,4 +110,18 @@ func inArray(value string, array []string) bool {
 		}
 	}
 	return false
+}
+
+func main() {
+	fmt.Println("-> Starting...")
+
+	bot := NewBot()
+
+	if err := bot.Client.Connect(); err != nil {
+		fmt.Printf("Connection error: %s\n", err)
+		quit <- true
+	}
+
+	// Wait for disconnect.
+	<-quit
 }
