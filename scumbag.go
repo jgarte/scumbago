@@ -17,8 +17,8 @@ var (
 )
 
 type Scumbag struct {
-	Client *irc.Conn
 	Config *BotConfig
+	client *irc.Conn
 }
 
 type DatabaseConfig struct {
@@ -44,8 +44,21 @@ func NewBot() *Scumbag {
 		Database: dbConfig,
 	}
 
-	clientConfig := irc.NewConfig(botConfig.Name)
-	clientConfig.Server = botConfig.Server
+	bot := Scumbag{Config: botConfig}
+
+	bot.setupDatabase()
+	bot.setupClient()
+	bot.setupHandlers()
+
+	return &bot
+}
+
+func (bot *Scumbag) setupDatabase() {
+}
+
+func (bot *Scumbag) setupClient() {
+	clientConfig := irc.NewConfig(bot.Config.Name)
+	clientConfig.Server = bot.Config.Server
 
 	// Setup SSL and skip cert verify.
 	clientConfig.SSL = true
@@ -54,24 +67,21 @@ func NewBot() *Scumbag {
 
 	clientConfig.NewNick = func(n string) string { return n + "^" }
 
-	bot := Scumbag{Client: irc.Client(clientConfig), Config: botConfig}
-	bot.setupHandlers()
-
-	return &bot
+	bot.client = irc.Client(clientConfig)
 }
 
 func (bot *Scumbag) setupHandlers() {
-	bot.Client.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
+	bot.client.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
 		fmt.Println("-> Connecting to #scumbag")
 		conn.Join("#scumbag")
 	})
 
-	bot.Client.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
+	bot.client.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
 		fmt.Println(" -> Disconnected...")
 		quit <- true
 	})
 
-	bot.Client.HandleFunc("PRIVMSG", bot.msgHandler)
+	bot.client.HandleFunc("PRIVMSG", bot.msgHandler)
 }
 
 // Handles normal PRIVMSG lines received from the server.
@@ -117,7 +127,7 @@ func main() {
 
 	bot := NewBot()
 
-	if err := bot.Client.Connect(); err != nil {
+	if err := bot.client.Connect(); err != nil {
 		fmt.Printf("Connection error: %s\n", err)
 		quit <- true
 	}
