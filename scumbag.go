@@ -99,16 +99,15 @@ func (bot *Scumbag) setupHandlers() {
 
 // Handles normal PRIVMSG lines received from the server.
 func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
-	time := line.Time
+	fmt.Printf("<- MSG(%v) %v: %v\n", line.Time, line.Nick, line.Args)
+
+	bot.saveURLs(line)
+}
+
+func (bot *Scumbag) saveURLs(line *irc.Line) {
 	nick := line.Nick
 	msg := line.Args[1]
 
-	fmt.Printf("<- MSG(%s) %s: %s\n", time, nick, msg)
-
-	bot.saveURLs(nick, msg)
-}
-
-func (bot *Scumbag) saveURLs(nick string, msg string) {
 	re := regexp.MustCompile(`((ftp|git|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(?:\/|\/([\w#!:.?+=&%@!\-\/]))?)`)
 
 	if urls := re.FindAllString(msg, -1); urls != nil {
@@ -119,7 +118,7 @@ func (bot *Scumbag) saveURLs(nick string, msg string) {
 				// Link doesn't exist, so create one.
 				link.Nick = nick
 				link.Url = url
-				link.Timestamp = time.Now()
+				link.Timestamp = line.Time
 
 				if err := bot.Links.Insert(link); err != nil {
 					fmt.Println("ERROR: ", err)
