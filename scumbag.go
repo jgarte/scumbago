@@ -20,7 +20,8 @@ type Scumbag struct {
 	Config *BotConfig
 	Links  *mgo.Collection
 
-	client *irc.Conn
+	ircClient *irc.Conn
+	dbSession *mgo.Session
 }
 
 type DatabaseConfig struct {
@@ -57,16 +58,32 @@ func NewBot() *Scumbag {
 	return &bot
 }
 
+func (bot *Scumbag) Start() {
+	fmt.Println("-> Starting...")
+
+	if err := bot.ircClient.Connect(); err != nil {
+		fmt.Printf("Connection error: %s\n", err)
+		quit <- true
+	}
+}
+
+func (bot *Scumbag) Shutdown() {
+	fmt.Println("-> Shutting down...")
+	bot.dbSession.Close()
+}
+
 func (bot *Scumbag) setupDatabase() {
 	session, err := mgo.Dial(bot.Config.DB.Host)
 	if err != nil {
 		fmt.Printf("Database connection error: %s\n", err)
 		quit <- true
 	}
+	bot.dbSession = session
 
 	databaseName := bot.Config.DB.Name
 	linksCollection := bot.Config.DB.LinksCollection
-	bot.Links = session.DB(databaseName).C(linksCollection)
+
+	bot.Links = bot.dbSession.DB(databaseName).C(linksCollection)
 }
 
 func (bot *Scumbag) setupClient() {
@@ -80,21 +97,21 @@ func (bot *Scumbag) setupClient() {
 
 	clientConfig.NewNick = func(n string) string { return n + "^" }
 
-	bot.client = irc.Client(clientConfig)
+	bot.ircClient = irc.Client(clientConfig)
 }
 
 func (bot *Scumbag) setupHandlers() {
-	bot.client.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
+	bot.ircClient.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
 		fmt.Println("-> Connecting to #scumbag")
 		conn.Join("#scumbag")
 	})
 
-	bot.client.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
+	bot.ircClient.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
 		fmt.Println(" -> Disconnected...")
 		quit <- true
 	})
 
-	bot.client.HandleFunc("PRIVMSG", bot.msgHandler)
+	bot.ircClient.HandleFunc("PRIVMSG", bot.msgHandler)
 }
 
 // Handles normal PRIVMSG lines received from the server.
@@ -135,31 +152,11 @@ type Link struct {
 	Timestamp time.Time
 }
 
-func notInArray(value string, array []string) bool {
-	return !inArray(value, array)
-}
-
-func inArray(value string, array []string) bool {
-	for _, v := range array {
-		if v == value {
-			return true
-		}
-	}
-	return false
-}
-
 func main() {
-	fmt.Println("-> Starting...")
-
 	bot := NewBot()
-
-	if err := bot.client.Connect(); err != nil {
-		fmt.Printf("Connection error: %s\n", err)
-		quit <- true
-	}
+	bot.Start()
+	defer bot.Shutdown()
 
 	// Wait for disconnect.
-	if <-quit {
-		fmt.Println("-> Shutting down...")
-	}
+	<-quit
 }
