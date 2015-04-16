@@ -1,4 +1,4 @@
-package main
+package scumbag
 
 import (
 	"crypto/tls"
@@ -65,6 +65,9 @@ func (bot *Scumbag) Start() {
 		fmt.Printf("Connection error: %s\n", err)
 		quit <- true
 	}
+
+	// Wait for disconnect.
+	<-quit
 }
 
 func (bot *Scumbag) Shutdown() {
@@ -150,13 +153,4 @@ type Link struct {
 	Nick      string
 	Url       string
 	Timestamp time.Time
-}
-
-func main() {
-	bot := NewBot()
-	bot.Start()
-	defer bot.Shutdown()
-
-	// Wait for disconnect.
-	<-quit
 }
