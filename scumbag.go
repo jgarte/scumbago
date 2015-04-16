@@ -4,44 +4,48 @@ import (
 	"crypto/tls"
 	"fmt"
 	"regexp"
+	"time"
 
 	irc "github.com/fluffle/goirc/client"
+	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var (
-	// TODO: Map to store URLs keyed by nick. Store this in a database.
-	urlDatabase = make(map[string][]string)
-
 	// Channel to handle disconnect.
 	quit = make(chan bool)
 )
 
 type Scumbag struct {
 	Config *BotConfig
+	Links  *mgo.Collection
+
 	client *irc.Conn
 }
 
 type DatabaseConfig struct {
-	Name string "scumbag"
-	Host string "localhost"
+	Name            string
+	Host            string
+	LinksCollection string
 }
 
 type BotConfig struct {
-	Name     string
-	Server   string
-	Database *DatabaseConfig
+	Name   string
+	Server string
+	DB     *DatabaseConfig
 }
 
 func NewBot() *Scumbag {
 	dbConfig := &DatabaseConfig{
-		Name: "scumbag",
-		Host: "localhost",
+		Name:            "scumbag",
+		Host:            "localhost",
+		LinksCollection: "links",
 	}
 
 	botConfig := &BotConfig{
-		Name:     "scumbag_go",
-		Server:   "irc.literat.us:9999",
-		Database: dbConfig,
+		Name:   "scumbag_go",
+		Server: "irc.literat.us:9999",
+		DB:     dbConfig,
 	}
 
 	bot := Scumbag{Config: botConfig}
@@ -54,6 +58,15 @@ func NewBot() *Scumbag {
 }
 
 func (bot *Scumbag) setupDatabase() {
+	session, err := mgo.Dial(bot.Config.DB.Host)
+	if err != nil {
+		fmt.Printf("Database connection error: %s\n", err)
+		quit <- true
+	}
+
+	databaseName := bot.Config.DB.Name
+	linksCollection := bot.Config.DB.LinksCollection
+	bot.Links = session.DB(databaseName).C(linksCollection)
 }
 
 func (bot *Scumbag) setupClient() {
@@ -93,8 +106,6 @@ func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 	fmt.Printf("<- MSG(%s) %s: %s\n", time, nick, msg)
 
 	bot.saveURLs(nick, msg)
-
-	fmt.Printf("-> URLs: %s\n", urlDatabase)
 }
 
 func (bot *Scumbag) saveURLs(nick string, msg string) {
@@ -102,11 +113,27 @@ func (bot *Scumbag) saveURLs(nick string, msg string) {
 
 	if urls := re.FindAllString(msg, -1); urls != nil {
 		for _, url := range urls {
-			if notInArray(url, urlDatabase[nick]) {
-				urlDatabase[nick] = append(urlDatabase[nick], url)
+			link := Link{}
+
+			if err := bot.Links.Find(bson.M{"nick": nick, "url": url}).One(&link); err != nil {
+				// Link doesn't exist, so create one.
+				link.Nick = nick
+				link.Url = url
+				link.Timestamp = time.Now()
+
+				if err := bot.Links.Insert(link); err != nil {
+					fmt.Println("ERROR: ", err)
+					continue // With the next URL match.
+				}
 			}
 		}
 	}
+}
+
+type Link struct {
+	Nick      string
+	Url       string
+	Timestamp time.Time
 }
 
 func notInArray(value string, array []string) bool {
@@ -133,5 +160,7 @@ func main() {
 	}
 
 	// Wait for disconnect.
-	<-quit
+	if <-quit {
+		fmt.Println("-> Shutting down...")
+	}
 }
