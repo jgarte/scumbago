@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"regexp"
-	"time"
 
 	irc "github.com/fluffle/goirc/client"
 	mgo "gopkg.in/mgo.v2"
@@ -22,18 +21,6 @@ type Scumbag struct {
 
 	ircClient *irc.Conn
 	dbSession *mgo.Session
-}
-
-type DatabaseConfig struct {
-	Name            string
-	Host            string
-	LinksCollection string
-}
-
-type BotConfig struct {
-	Name   string
-	Server string
-	DB     *DatabaseConfig
 }
 
 func NewBot() *Scumbag {
@@ -143,14 +130,10 @@ func (bot *Scumbag) saveURLs(line *irc.Line) {
 				if err := bot.Links.Insert(link); err != nil {
 					fmt.Println("ERROR: ", err)
 					continue // With the next URL match.
+				} else {
+					fmt.Printf("-> LINK: %v\n", link)
 				}
 			}
 		}
 	}
-}
-
-type Link struct {
-	Nick      string
-	Url       string
-	Timestamp time.Time
 }
