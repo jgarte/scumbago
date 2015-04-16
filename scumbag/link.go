@@ -41,3 +41,8 @@ func SaveURLs(bot *Scumbag, line *irc.Line) {
 		}
 	}
 }
+
+func SearchLinks(query string) []string {
+	panic("Finish this.")
+	return make([]string, 1)
+}

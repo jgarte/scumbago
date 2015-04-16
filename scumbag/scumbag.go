@@ -3,9 +3,14 @@ package scumbag
 import (
 	"crypto/tls"
 	"fmt"
+	"strings"
 
 	irc "github.com/fluffle/goirc/client"
 	mgo "gopkg.in/mgo.v2"
+)
+
+const (
+	CMD_URL = "?url"
 )
 
 var (
@@ -83,7 +88,7 @@ func (bot *Scumbag) setupClient() {
 	clientConfig.SSLConfig = new(tls.Config)
 	clientConfig.SSLConfig.InsecureSkipVerify = true
 
-	clientConfig.NewNick = func(n string) string { return n + "^" }
+	clientConfig.NewNick = func(n string) string { return n + "_" }
 
 	bot.ircClient = irc.Client(clientConfig)
 }
@@ -106,5 +111,25 @@ func (bot *Scumbag) setupHandlers() {
 func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 	fmt.Printf("<- MSG(%v) %v: %v\n", line.Time, line.Nick, line.Args)
 
-	SaveURLs(bot, line)
+	go SaveURLs(bot, line)
+	go bot.processCommands(line)
+}
+
+func (bot *Scumbag) processCommands(line *irc.Line) {
+	// channel := line.Args[0]
+	command, args := bot.getCommand(line)
+
+	switch command {
+	case CMD_URL:
+		SearchLinks(args)
+	}
+}
+
+func (bot *Scumbag) getCommand(line *irc.Line) (string, string) {
+	fields := strings.Fields(line.Args[1])
+
+	command := fields[0]
+	args := strings.Join(fields[1:], " ")
+
+	return command, args
 }
