@@ -1,0 +1,11 @@
+{
+  "Name":    "scumbag_bot",
+  "Server":  "irc.example.com:6667",
+  "Channel": "#scumbag",
+
+  "Database": {
+    "Host": "localhost",
+    "Name": "scumbag",
+    "LinksCollection": "links"
+  }
+}

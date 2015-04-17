@@ -26,20 +26,8 @@ type Scumbag struct {
 	dbSession *mgo.Session
 }
 
-func NewBot() *Scumbag {
-	dbConfig := &DatabaseConfig{
-		Name:            "scumbag",
-		Host:            "localhost",
-		LinksCollection: "links",
-	}
-
-	botConfig := &BotConfig{
-		Name:    "scumbag_go",
-		Server:  "irc.literat.us:9999",
-		Channel: "#scumbag",
-		DB:      dbConfig,
-	}
-
+func NewBot(configFile *string) *Scumbag {
+	botConfig := LoadConfig(configFile)
 	bot := &Scumbag{Config: botConfig}
 
 	bot.setupDatabase()
@@ -54,7 +42,7 @@ func (bot *Scumbag) Start() {
 
 	if err := bot.ircClient.Connect(); err != nil {
 		fmt.Printf("Connection error: %s\n", err)
-		quit <- true
+		return
 	}
 
 	// Wait for disconnect.
@@ -67,15 +55,15 @@ func (bot *Scumbag) Shutdown() {
 }
 
 func (bot *Scumbag) setupDatabase() {
-	session, err := mgo.Dial(bot.Config.DB.Host)
+	session, err := mgo.Dial(bot.Config.Database.Host)
 	if err != nil {
 		fmt.Printf("Database connection error: %s\n", err)
 		quit <- true
 	}
 	bot.dbSession = session
 
-	databaseName := bot.Config.DB.Name
-	linksCollection := bot.Config.DB.LinksCollection
+	databaseName := bot.Config.Database.Name
+	linksCollection := bot.Config.Database.LinksCollection
 
 	bot.Links = bot.dbSession.DB(databaseName).C(linksCollection)
 }
