@@ -3,10 +3,15 @@ package scumbag
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	irc "github.com/fluffle/goirc/client"
 	"gopkg.in/mgo.v2/bson"
+)
+
+const (
+	SEARCH_LIMIT = 5
 )
 
 var (
@@ -44,7 +49,23 @@ func SaveURLs(bot *Scumbag, line *irc.Line) {
 	}
 }
 
-func SearchLinks(query string) []string {
-	panic("Finish this.")
-	return make([]string, 1)
+func SearchLinks(bot *Scumbag, query string) ([]Link, error) {
+	var results []Link
+
+	// Regex search:  ?url /imgur/
+	if strings.HasPrefix(query, "/") && strings.HasSuffix(query, "/") {
+		urlQuery := strings.Replace(query, "/", "", 2)
+		err := bot.Links.Find(bson.M{"url": &bson.RegEx{Pattern: urlQuery, Options: "i"}}).Sort("-timestamp").Limit(SEARCH_LIMIT).All(&results)
+		if err != nil {
+			return results, err
+		}
+	} else {
+		// Nick search:  ?url oshuma
+		err := bot.Links.Find(bson.M{"nick": query}).Sort("-timestamp").Limit(SEARCH_LIMIT).All(&results)
+		if err != nil {
+			return results, err
+		}
+	}
+
+	return results, nil
 }
