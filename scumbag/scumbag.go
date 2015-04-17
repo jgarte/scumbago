@@ -34,9 +34,10 @@ func NewBot() *Scumbag {
 	}
 
 	botConfig := &BotConfig{
-		Name:   "scumbag_go",
-		Server: "irc.literat.us:9999",
-		DB:     dbConfig,
+		Name:    "scumbag_go",
+		Server:  "irc.literat.us:9999",
+		Channel: "#scumbag",
+		DB:      dbConfig,
 	}
 
 	bot := &Scumbag{Config: botConfig}
@@ -95,8 +96,9 @@ func (bot *Scumbag) setupClient() {
 
 func (bot *Scumbag) setupHandlers() {
 	bot.ircClient.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
-		fmt.Println("-> Connecting to #scumbag")
-		conn.Join("#scumbag")
+		fmt.Printf("-> Connected to %s\n", bot.Config.Server)
+		fmt.Printf("-> Joining %s\n", bot.Config.Channel)
+		conn.Join(bot.Config.Channel)
 	})
 
 	bot.ircClient.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {

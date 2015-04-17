@@ -1,9 +1,10 @@
 package scumbag
 
 type BotConfig struct {
-	Name   string
-	Server string
-	DB     *DatabaseConfig
+	Name    string
+	Server  string
+	Channel string
+	DB      *DatabaseConfig
 }
 
 type DatabaseConfig struct {
