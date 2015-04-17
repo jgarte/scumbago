@@ -116,12 +116,12 @@ func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 }
 
 func (bot *Scumbag) processCommands(line *irc.Line) {
-	// channel := line.Args[0]
+	channel := line.Args[0]
 	command, args := bot.getCommand(line)
 
 	switch command {
 	case CMD_URL:
-		SearchLinks(args)
+		HandleUrlCommand(bot, channel, args)
 	}
 }
 
