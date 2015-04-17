@@ -9,6 +9,10 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+var (
+	urlRegex = regexp.MustCompile(`((ftp|git|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(?:\/|\/([\w#!:.?+=&%@!\-\/]))?)`)
+)
+
 type Link struct {
 	Nick      string
 	Url       string
@@ -19,11 +23,9 @@ func SaveURLs(bot *Scumbag, line *irc.Line) {
 	nick := line.Nick
 	msg := line.Args[1]
 
-	re := regexp.MustCompile(`((ftp|git|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(?:\/|\/([\w#!:.?+=&%@!\-\/]))?)`)
-
-	if urls := re.FindAllString(msg, -1); urls != nil {
+	if urls := urlRegex.FindAllString(msg, -1); urls != nil {
 		for _, url := range urls {
-			link := Link{}
+			var link Link
 
 			if err := bot.Links.Find(bson.M{"nick": nick, "url": url}).One(&link); err != nil {
 				// Link doesn't exist, so create one.

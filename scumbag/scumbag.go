@@ -39,13 +39,13 @@ func NewBot() *Scumbag {
 		DB:     dbConfig,
 	}
 
-	bot := Scumbag{Config: botConfig}
+	bot := &Scumbag{Config: botConfig}
 
 	bot.setupDatabase()
 	bot.setupClient()
 	bot.setupHandlers()
 
-	return &bot
+	return bot
 }
 
 func (bot *Scumbag) Start() {
