@@ -2,7 +2,9 @@ package scumbag
 
 import (
 	"crypto/tls"
-	"fmt"
+	"io"
+	"log"
+	"os"
 	"strings"
 
 	irc "github.com/fluffle/goirc/client"
@@ -11,6 +13,13 @@ import (
 
 const (
 	CMD_URL = "?url"
+
+	// Default config file.
+	CONFIG_FILE = "config/bot.json"
+
+	// Default log file.
+	LOG_FILE   = "log/scumbag.log"
+	LOG_PREFIX = ""
 )
 
 var (
@@ -22,14 +31,17 @@ type Scumbag struct {
 	Config *BotConfig
 	Links  *mgo.Collection
 
+	Log *log.Logger
+
 	ircClient *irc.Conn
 	dbSession *mgo.Session
 }
 
-func NewBot(configFile *string) *Scumbag {
+func NewBot(configFile *string, logFilename *string) *Scumbag {
 	botConfig := LoadConfig(configFile)
 	bot := &Scumbag{Config: botConfig}
 
+	bot.setupLogger(logFilename)
 	bot.setupDatabase()
 	bot.setupClient()
 	bot.setupHandlers()
@@ -38,10 +50,10 @@ func NewBot(configFile *string) *Scumbag {
 }
 
 func (bot *Scumbag) Start() {
-	fmt.Println("-> Starting...")
+	bot.Log.Println("-> Starting...")
 
 	if err := bot.ircClient.Connect(); err != nil {
-		fmt.Printf("Connection error: %s\n", err)
+		bot.Log.Fatalf("Connection error: %s\n", err)
 		return
 	}
 
@@ -50,14 +62,26 @@ func (bot *Scumbag) Start() {
 }
 
 func (bot *Scumbag) Shutdown() {
-	fmt.Println("-> Shutting down...")
+	bot.Log.Println("-> Shutting down...")
 	bot.dbSession.Close()
+}
+
+func (bot *Scumbag) setupLogger(logFilename *string) {
+	logFile, err := os.OpenFile(*logFilename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	logWriter := io.MultiWriter(logFile, os.Stdout)
+
+	log.SetOutput(logFile)
+	bot.Log = log.New(logWriter, LOG_PREFIX, log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func (bot *Scumbag) setupDatabase() {
 	session, err := mgo.Dial(bot.Config.Database.Host)
 	if err != nil {
-		fmt.Printf("Database connection error: %s\n", err)
+		bot.Log.Fatalf("Database connection error: %s\n", err)
 		quit <- true
 	}
 	bot.dbSession = session
@@ -84,13 +108,13 @@ func (bot *Scumbag) setupClient() {
 
 func (bot *Scumbag) setupHandlers() {
 	bot.ircClient.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
-		fmt.Printf("-> Connected to %s\n", bot.Config.Server)
-		fmt.Printf("-> Joining %s\n", bot.Config.Channel)
+		bot.Log.Printf("-> Connected to %s\n", bot.Config.Server)
+		bot.Log.Printf("-> Joining %s\n", bot.Config.Channel)
 		conn.Join(bot.Config.Channel)
 	})
 
 	bot.ircClient.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
-		fmt.Println(" -> Disconnected...")
+		bot.Log.Println(" -> Disconnected...")
 		quit <- true
 	})
 
@@ -99,7 +123,7 @@ func (bot *Scumbag) setupHandlers() {
 
 // Handles normal PRIVMSG lines received from the server.
 func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
-	fmt.Printf("<- MSG(%v) %v: %v\n", line.Time, line.Nick, line.Args)
+	bot.Log.Printf("<- MSG(%v) %v: %v\n", line.Time, line.Nick, line.Args)
 
 	go SaveURLs(bot, line)
 	go bot.processCommands(line)

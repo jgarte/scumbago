@@ -1,7 +1,6 @@
 package scumbag
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -39,10 +38,10 @@ func SaveURLs(bot *Scumbag, line *irc.Line) {
 				link.Timestamp = line.Time
 
 				if err := bot.Links.Insert(link); err != nil {
-					fmt.Println("ERROR: ", err)
+					bot.Log.Println("ERROR: ", err)
 					continue // With the next URL match.
 				} else {
-					fmt.Printf("-> LINK: %v\n", link)
+					bot.Log.Printf("-> LINK: %v\n", link)
 				}
 			}
 		}

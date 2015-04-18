@@ -1,7 +1,6 @@
 package scumbag
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -12,7 +11,7 @@ const (
 func HandleUrlCommand(bot *Scumbag, channel string, args string) {
 	links, err := SearchLinks(bot, args)
 	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
+		bot.Log.Printf("ERROR: %v\n", err)
 		return
 	}
 

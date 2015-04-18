@@ -1,2 +1,3 @@
 config/bot.json
+log/*.log
 tmp
