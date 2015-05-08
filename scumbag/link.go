@@ -38,10 +38,10 @@ func SaveURLs(bot *Scumbag, line *irc.Line) {
 				link.Timestamp = line.Time
 
 				if err := bot.Links.Insert(link); err != nil {
-					bot.Log.Println("ERROR: ", err)
+					bot.Log.WithField("error", err).Error("SaveURLs()")
 					continue // With the next URL match.
 				} else {
-					bot.Log.Printf("-> LINK: %v\n", link)
+					bot.Log.WithField("link", link).Info("-> Link")
 				}
 			}
 		}

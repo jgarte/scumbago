@@ -11,7 +11,7 @@ const (
 func HandleUrlCommand(bot *Scumbag, channel string, args string) {
 	links, err := SearchLinks(bot, args)
 	if err != nil {
-		bot.Log.Printf("ERROR: %v\n", err)
+		bot.Log.WithField("error", err).Error("HandleUrlCommand()")
 		return
 	}
 

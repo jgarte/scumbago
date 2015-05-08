@@ -2,11 +2,10 @@ package scumbag
 
 import (
 	"crypto/tls"
-	"io"
-	"log"
 	"os"
 	"strings"
 
+	log "github.com/Sirupsen/logrus"
 	irc "github.com/fluffle/goirc/client"
 	mgo "gopkg.in/mgo.v2"
 )
@@ -50,10 +49,10 @@ func NewBot(configFile *string, logFilename *string) *Scumbag {
 }
 
 func (bot *Scumbag) Start() {
-	bot.Log.Println("-> Starting...")
+	bot.Log.Info("Starting.")
 
 	if err := bot.ircClient.Connect(); err != nil {
-		bot.Log.Fatalf("Connection error: %s\n", err)
+		bot.Log.WithField("error", err).Fatal("IRC Connection Error")
 		return
 	}
 
@@ -62,7 +61,7 @@ func (bot *Scumbag) Start() {
 }
 
 func (bot *Scumbag) Shutdown() {
-	bot.Log.Println("-> Shutting down...")
+	bot.Log.Info("Shutting down.")
 	bot.dbSession.Close()
 }
 
@@ -72,16 +71,17 @@ func (bot *Scumbag) setupLogger(logFilename *string) {
 		panic(err)
 	}
 
-	logWriter := io.MultiWriter(logFile, os.Stdout)
+	logger := log.New()
+	logger.Out = logFile
+	logger.Level = log.DebugLevel
 
-	log.SetOutput(logFile)
-	bot.Log = log.New(logWriter, LOG_PREFIX, log.Ldate|log.Ltime|log.Lshortfile)
+	bot.Log = logger
 }
 
 func (bot *Scumbag) setupDatabase() {
 	session, err := mgo.Dial(bot.Config.Database.Host)
 	if err != nil {
-		bot.Log.Fatalf("Database connection error: %s\n", err)
+		bot.Log.WithField("error", err).Fatal("Database Connection Error")
 		quit <- true
 	}
 	bot.dbSession = session
@@ -108,13 +108,13 @@ func (bot *Scumbag) setupClient() {
 
 func (bot *Scumbag) setupHandlers() {
 	bot.ircClient.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
-		bot.Log.Printf("-> Connected to %s\n", bot.Config.Server)
-		bot.Log.Printf("-> Joining %s\n", bot.Config.Channel)
+		bot.Log.WithField("server", bot.Config.Server).Info("Connected to server.")
+		bot.Log.WithField("channel", bot.Config.Channel).Info("Joined channel.")
 		conn.Join(bot.Config.Channel)
 	})
 
 	bot.ircClient.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
-		bot.Log.Println(" -> Disconnected...")
+		bot.Log.Info("Disconnected.")
 		quit <- true
 	})
 
@@ -123,7 +123,11 @@ func (bot *Scumbag) setupHandlers() {
 
 // Handles normal PRIVMSG lines received from the server.
 func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
-	bot.Log.Printf("<- MSG(%v) %v: %v\n", line.Time, line.Nick, line.Args)
+	bot.Log.WithFields(log.Fields{
+		"time": line.Time,
+		"nick": line.Nick,
+		"args": line.Args,
+	}).Debug("Channel message.")
 
 	go SaveURLs(bot, line)
 	go bot.processCommands(line)
