@@ -25,8 +25,6 @@ func (bot *Scumbag) HandleSpellCommand(channel string, args string) {
 		return
 	}
 
-	bot.Log.WithField("response", response).Debug("HandleSpellCommand()")
-
 	bot.Msg(channel, response)
 }
 
@@ -40,8 +38,6 @@ func (bot *Scumbag) SpellcheckLine(line *irc.Line) {
 			bot.Log.WithField("error", err).Error("SpellcheckLine()")
 			return
 		}
-
-		bot.Log.WithField("response", response).Debug("SpellcheckLine()")
 
 		bot.Msg(channel, response)
 	}
@@ -71,7 +67,7 @@ func (bot *Scumbag) Spellcheck(word string) (string, error) {
 	}
 
 	spellMatch := aspellRegexp.FindStringSubmatch(line)
-	if spellMatch != nil {
+	if len(spellMatch) > 0 {
 		return spellMatch[1], nil
 	} else {
 		return "GJ U CAN SPELL", nil
