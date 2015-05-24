@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	CMD_URL = "?url"
+	CMD_SPELL = "?sp"
+	CMD_URL   = "?url"
 
 	// Default config file.
 	CONFIG_FILE = "config/bot.json"
@@ -109,8 +110,8 @@ func (bot *Scumbag) setupClient() {
 func (bot *Scumbag) setupHandlers() {
 	bot.ircClient.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
 		bot.Log.WithField("server", bot.Config.Server).Info("Connected to server.")
-		bot.Log.WithField("channel", bot.Config.Channel).Info("Joined channel.")
 		conn.Join(bot.Config.Channel)
+		bot.Log.WithField("channel", bot.Config.Channel).Info("Joined channel.")
 	})
 
 	bot.ircClient.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
@@ -129,8 +130,17 @@ func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 		"args": line.Args,
 	}).Debug("Channel message.")
 
-	go SaveURLs(bot, line)
+	// These functions check the line text and act accordingly.
+	go bot.SaveURLs(line)
+	go bot.SpellcheckLine(line)
+
+	// This function handles explicit bot commands ("?url", "?sp", etc)
 	go bot.processCommands(line)
+}
+
+// Sends a PRIVMSG to `channel_or_nick`.
+func (bot *Scumbag) Msg(channel_or_nick string, message string) {
+	bot.ircClient.Privmsg(channel_or_nick, message)
 }
 
 func (bot *Scumbag) processCommands(line *irc.Line) {
@@ -138,8 +148,10 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 	command, args := bot.getCommand(line)
 
 	switch command {
+	case CMD_SPELL:
+		bot.HandleSpellCommand(channel, args)
 	case CMD_URL:
-		HandleUrlCommand(bot, channel, args)
+		bot.HandleUrlCommand(channel, args)
 	}
 }
 

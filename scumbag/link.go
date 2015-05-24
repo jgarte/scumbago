@@ -11,10 +11,11 @@ import (
 
 const (
 	SEARCH_LIMIT = 5
+	URL_SEP      = " | "
 )
 
 var (
-	urlRegex = regexp.MustCompile(`((ftp|git|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(?:\/|\/([\w#!:.?+=&%@!\-\/]))?)`)
+	urlRegexp = regexp.MustCompile(`((ftp|git|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(?:\/|\/([\w#!:.?+=&%@!\-\/]))?)`)
 )
 
 type Link struct {
@@ -23,11 +24,27 @@ type Link struct {
 	Timestamp time.Time
 }
 
-func SaveURLs(bot *Scumbag, line *irc.Line) {
+// Handler for "?url <nick_or_regex>"
+func (bot *Scumbag) HandleUrlCommand(channel string, args string) {
+	links, err := bot.SearchLinks(args)
+	if err != nil {
+		bot.Log.WithField("error", err).Error("HandleUrlCommand()")
+		return
+	}
+
+	response := make([]string, len(links))
+	for i, link := range links {
+		response[i] = link.Url
+	}
+
+	bot.Msg(channel, strings.Join(response, URL_SEP))
+}
+
+func (bot *Scumbag) SaveURLs(line *irc.Line) {
 	nick := line.Nick
 	msg := line.Args[1]
 
-	if urls := urlRegex.FindAllString(msg, -1); urls != nil {
+	if urls := urlRegexp.FindAllString(msg, -1); urls != nil {
 		for _, url := range urls {
 			var link Link
 
@@ -48,7 +65,7 @@ func SaveURLs(bot *Scumbag, line *irc.Line) {
 	}
 }
 
-func SearchLinks(bot *Scumbag, query string) ([]Link, error) {
+func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 	var results []Link
 
 	// Regex search:  ?url /imgur/
