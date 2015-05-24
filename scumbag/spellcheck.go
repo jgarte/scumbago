@@ -1,8 +1,9 @@
 package scumbag
 
 import (
-	// "os/exec"
+	"os/exec"
 	"regexp"
+	"strings"
 
 	irc "github.com/fluffle/goirc/client"
 )
@@ -12,7 +13,8 @@ const (
 )
 
 var (
-	wordRegexp = regexp.MustCompile(`(\w+)\s{1}\(sp\?\)`)
+	aspellRegexp = regexp.MustCompile(`\A&\s\w+\s\d+\s\d+:\s(.+)\z`)
+	wordRegexp   = regexp.MustCompile(`(\w+)\s{1}\(sp\?\)`)
 )
 
 // Handler for "?sp <word>"
@@ -46,8 +48,34 @@ func (bot *Scumbag) SpellcheckLine(line *irc.Line) {
 }
 
 func (bot *Scumbag) Spellcheck(word string) (string, error) {
-	bot.Log.WithField("word", word).Debug("Spellcheck()")
-	return "spellcheck: " + word, nil
+	echo := exec.Command("echo", word)
+	aspell := exec.Command(ASPELL, "pipe")
+
+	echoOut, err := echo.StdoutPipe()
+	if err != nil {
+		bot.Log.WithField("error", err).Error("Spellcheck()")
+		return "", err
+	}
+	echo.Start()
+
+	aspell.Stdin = echoOut
+	output, err := aspell.Output()
+	if err != nil {
+		bot.Log.WithField("error", err).Error("Spellcheck()")
+		return "", err
+	}
+	line := strings.Split(string(output[:]), "\n")[1]
+
+	if strings.HasPrefix(line, "#") { // aspell's output starts with a '#' if no matches found.
+		return "Beats me...", nil
+	}
+
+	spellMatch := aspellRegexp.FindStringSubmatch(line)
+	if spellMatch != nil {
+		return spellMatch[1], nil
+	} else {
+		return "GJ U CAN SPELL", nil
+	}
 }
 
 func (bot *Scumbag) getWordFromLine(line *irc.Line) (string, bool) {
