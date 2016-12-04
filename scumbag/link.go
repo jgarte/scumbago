@@ -1,12 +1,13 @@
 package scumbag
 
 import (
+	"database/sql"
 	"regexp"
 	"strings"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	irc "github.com/fluffle/goirc/client"
-	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -21,7 +22,7 @@ var (
 type Link struct {
 	Nick      string
 	Url       string
-	Timestamp time.Time
+	CreatedAt time.Time
 }
 
 // Handler for "?url <nick_or_regex>"
@@ -46,20 +47,24 @@ func (bot *Scumbag) SaveURLs(line *irc.Line) {
 
 	if urls := urlRegexp.FindAllString(msg, -1); urls != nil {
 		for _, url := range urls {
-			var link Link
+			var urlMatch string
 
-			if err := bot.Links.Find(bson.M{"nick": nick, "url": url}).One(&link); err != nil {
+			err := bot.db.QueryRow("SELECT url FROM links WHERE url=$1", url).Scan(&urlMatch)
+			switch {
+			case err == sql.ErrNoRows:
 				// Link doesn't exist, so create one.
-				link.Nick = nick
-				link.Url = url
-				link.Timestamp = line.Time
-
-				if err := bot.Links.Insert(link); err != nil {
-					bot.Log.WithField("error", err).Error("SaveURLs()")
-					continue // With the next URL match.
+				var linkId int
+				if insertErr := bot.db.QueryRow("INSERT INTO links(nick, url, created_at) VALUES($1, $2, $3) RETURNING id;", nick, url, line.Time).Scan(&linkId); insertErr != nil {
+					bot.Log.WithFields(log.Fields{
+						"id":         linkId,
+						"url":        url,
+						"created_at": line.Time,
+					}).Info("-> New Link")
 				} else {
-					bot.Log.WithField("link", link).Info("-> Link")
+					bot.Log.Fatal(insertErr)
 				}
+			case err != nil:
+				bot.Log.Fatal(err)
 			}
 		}
 	}
