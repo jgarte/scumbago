@@ -6,6 +6,7 @@
   "Database": {
     "Host": "localhost",
     "Name": "scumbag",
-    "LinksCollection": "links"
+    "User": "database_user",
+    "Password": "database_password"
   }
 }

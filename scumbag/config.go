@@ -13,9 +13,10 @@ type BotConfig struct {
 }
 
 type DatabaseConfig struct {
-	Name            string
-	Host            string
-	LinksCollection string
+	Host     string
+	Name     string
+	User     string
+	Password string
 }
 
 func LoadConfig(configFile *string) *BotConfig {

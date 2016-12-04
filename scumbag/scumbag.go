@@ -2,12 +2,15 @@ package scumbag
 
 import (
 	"crypto/tls"
+	"fmt"
 	"os"
 	"strings"
 
+	"database/sql"
+	_ "github.com/lib/pq"
+
 	log "github.com/Sirupsen/logrus"
 	irc "github.com/fluffle/goirc/client"
-	mgo "gopkg.in/mgo.v2"
 )
 
 const (
@@ -29,12 +32,10 @@ var (
 
 type Scumbag struct {
 	Config *BotConfig
-	Links  *mgo.Collection
-
-	Log *log.Logger
+	Log    *log.Logger
 
 	ircClient *irc.Conn
-	dbSession *mgo.Session
+	db        *sql.DB
 }
 
 func NewBot(configFile *string, logFilename *string) *Scumbag {
@@ -63,7 +64,7 @@ func (bot *Scumbag) Start() {
 
 func (bot *Scumbag) Shutdown() {
 	bot.Log.Info("Shutting down.")
-	bot.dbSession.Close()
+	bot.db.Close()
 }
 
 func (bot *Scumbag) setupLogger(logFilename *string) {
@@ -80,17 +81,13 @@ func (bot *Scumbag) setupLogger(logFilename *string) {
 }
 
 func (bot *Scumbag) setupDatabase() {
-	session, err := mgo.Dial(bot.Config.Database.Host)
+	databaseParams := fmt.Sprintf("dbname=%s user=%s password=%s", bot.Config.Database.Name, bot.Config.Database.User, bot.Config.Database.Password)
+	session, err := sql.Open("postgres", databaseParams)
 	if err != nil {
 		bot.Log.WithField("error", err).Fatal("Database Connection Error")
 		quit <- true
 	}
-	bot.dbSession = session
-
-	databaseName := bot.Config.Database.Name
-	linksCollection := bot.Config.Database.LinksCollection
-
-	bot.Links = bot.dbSession.DB(databaseName).C(linksCollection)
+	bot.db = session
 }
 
 func (bot *Scumbag) setupClient() {
