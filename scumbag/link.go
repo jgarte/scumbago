@@ -49,22 +49,20 @@ func (bot *Scumbag) SaveURLs(line *irc.Line) {
 		for _, url := range urls {
 			var urlMatch string
 
-			err := bot.db.QueryRow("SELECT url FROM links WHERE url=$1", url).Scan(&urlMatch)
+			err := bot.db.QueryRow("SELECT url FROM links WHERE url=$1;", url).Scan(&urlMatch)
 			switch {
 			case err == sql.ErrNoRows:
 				// Link doesn't exist, so create one.
-				var linkId int
-				if insertErr := bot.db.QueryRow("INSERT INTO links(nick, url, created_at) VALUES($1, $2, $3) RETURNING id;", nick, url, line.Time).Scan(&linkId); insertErr != nil {
-					bot.Log.WithFields(log.Fields{
-						"id":         linkId,
-						"url":        url,
-						"created_at": line.Time,
-					}).Info("-> New Link")
-				} else {
-					bot.Log.Fatal(insertErr)
+				if _, insertErr := bot.db.Exec("INSERT INTO links(nick, url, created_at) VALUES($1, $2, $3) RETURNING id;", nick, url, line.Time); insertErr != nil {
+					bot.Log.WithFields(log.Fields{"insertErr": insertErr}).Fatal(insertErr)
 				}
+				bot.Log.WithField("URL", url).Info("-> New Link")
+
 			case err != nil:
-				bot.Log.Fatal(err)
+				bot.Log.WithFields(log.Fields{"err": err}).Fatal(err)
+
+			default:
+				bot.Log.WithFields(log.Fields{"url": url}).Info("-> Existing Link")
 			}
 		}
 	}
