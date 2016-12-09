@@ -80,9 +80,27 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 		}
 	} else {
 		// Nick search:  ?url oshuma
-		err := bot.Links.Find(bson.M{"nick": query}).Sort("-timestamp").Limit(SEARCH_LIMIT).All(&results)
+		bot.Log.WithField("nick", query).Debug("SearchLinks(): Nick Search")
+
+		rows, err := bot.db.Query(`SELECT nick, url FROM links WHERE nick = $1 LIMIT $2;`, query, SEARCH_LIMIT)
 		if err != nil {
-			return results, err
+			bot.Log.WithField("err", err).Fatal("SearchLinks()")
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			link := Link{}
+			err := rows.Scan(&link.Nick, &link.Url)
+			if err != nil {
+				bot.Log.WithField("err", err).Fatal("SearchLinks()")
+			}
+
+			results = append(results, link)
+		}
+
+		err = rows.Err()
+		if err != nil {
+			bot.Log.WithField("err", err).Fatal("SearchLinks()")
 		}
 	}
 
