@@ -74,9 +74,26 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 	// Regex search:  ?url /imgur/
 	if strings.HasPrefix(query, "/") && strings.HasSuffix(query, "/") {
 		urlQuery := strings.Replace(query, "/", "", 2)
-		err := bot.Links.Find(bson.M{"url": &bson.RegEx{Pattern: urlQuery, Options: "i"}}).Sort("-timestamp").Limit(SEARCH_LIMIT).All(&results)
+
+		rows, err := bot.db.Query(`SELECT nick, url FROM links WHERE url ILIKE '%' || $1 || '%' LIMIT $2;`, urlQuery, SEARCH_LIMIT)
 		if err != nil {
-			return results, err
+			bot.Log.WithField("err", err).Fatal("SearchLinks()")
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			link := Link{}
+			err := rows.Scan(&link.Nick, &link.Url)
+			if err != nil {
+				bot.Log.WithField("err", err).Fatal("SearchLinks()")
+			}
+
+			results = append(results, link)
+		}
+
+		err = rows.Err()
+		if err != nil {
+			bot.Log.WithField("err", err).Fatal("SearchLinks()")
 		}
 	} else {
 		// Nick search:  ?url oshuma
