@@ -54,15 +54,15 @@ func (bot *Scumbag) SaveURLs(line *irc.Line) {
 			case err == sql.ErrNoRows:
 				// Link doesn't exist, so create one.
 				if _, insertErr := bot.db.Exec("INSERT INTO links(nick, url, created_at) VALUES($1, $2, $3) RETURNING id;", nick, url, line.Time); insertErr != nil {
-					bot.Log.WithFields(log.Fields{"insertErr": insertErr}).Fatal(insertErr)
+					bot.Log.WithFields(log.Fields{"insertErr": insertErr}).Fatal("SaveURLs()")
 				}
-				bot.Log.WithField("URL", url).Info("-> New Link")
+				bot.Log.WithField("URL", url).Debug("SaveURLs(): New Link")
 
 			case err != nil:
-				bot.Log.WithFields(log.Fields{"err": err}).Fatal(err)
+				bot.Log.WithFields(log.Fields{"err": err}).Fatal("SaveURLs()")
 
 			default:
-				bot.Log.WithFields(log.Fields{"url": url}).Info("-> Existing Link")
+				bot.Log.WithFields(log.Fields{"url": url}).Debug("SaveURLs(): Existing Link")
 			}
 		}
 	}
