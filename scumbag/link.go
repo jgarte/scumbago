@@ -77,7 +77,8 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 
 		rows, err := bot.db.Query(`SELECT nick, url FROM links WHERE url ILIKE '%' || $1 || '%' LIMIT $2;`, urlQuery, SEARCH_LIMIT)
 		if err != nil {
-			bot.Log.WithField("err", err).Fatal("SearchLinks()")
+			bot.Log.WithField("err", err).Error("SearchLinks()")
+			return nil, err
 		}
 		defer rows.Close()
 
@@ -85,7 +86,8 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 			link := Link{}
 			err := rows.Scan(&link.Nick, &link.Url)
 			if err != nil {
-				bot.Log.WithField("err", err).Fatal("SearchLinks()")
+				bot.Log.WithField("err", err).Error("SearchLinks()")
+				return nil, err
 			}
 
 			results = append(results, link)
@@ -93,7 +95,8 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 
 		err = rows.Err()
 		if err != nil {
-			bot.Log.WithField("err", err).Fatal("SearchLinks()")
+			bot.Log.WithField("err", err).Error("SearchLinks()")
+			return nil, err
 		}
 	} else {
 		// Nick search:  ?url oshuma
@@ -101,7 +104,8 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 
 		rows, err := bot.db.Query(`SELECT nick, url FROM links WHERE nick = $1 LIMIT $2;`, query, SEARCH_LIMIT)
 		if err != nil {
-			bot.Log.WithField("err", err).Fatal("SearchLinks()")
+			bot.Log.WithField("err", err).Error("SearchLinks()")
+			return nil, err
 		}
 		defer rows.Close()
 
@@ -109,7 +113,8 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 			link := Link{}
 			err := rows.Scan(&link.Nick, &link.Url)
 			if err != nil {
-				bot.Log.WithField("err", err).Fatal("SearchLinks()")
+				bot.Log.WithField("err", err).Error("SearchLinks()")
+				return nil, err
 			}
 
 			results = append(results, link)
@@ -117,7 +122,8 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 
 		err = rows.Err()
 		if err != nil {
-			bot.Log.WithField("err", err).Fatal("SearchLinks()")
+			bot.Log.WithField("err", err).Error("SearchLinks()")
+			return nil, err
 		}
 	}
 
