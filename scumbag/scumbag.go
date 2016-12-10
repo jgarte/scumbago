@@ -21,8 +21,7 @@ const (
 	CONFIG_FILE = "config/bot.json"
 
 	// Default log file.
-	LOG_FILE   = "log/scumbag.log"
-	LOG_PREFIX = ""
+	LOG_FILE = "log/scumbag.log"
 )
 
 var (
