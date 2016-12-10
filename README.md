@@ -1,4 +1,4 @@
-## Scumbag IRC Bot
+# Scumbag IRC Bot
 
 ## Dependencies
 
