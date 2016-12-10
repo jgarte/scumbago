@@ -32,10 +32,10 @@ var (
 
 type Scumbag struct {
 	Config *BotConfig
+	DB     *sql.DB
 	Log    *log.Logger
 
 	ircClient *irc.Conn
-	db        *sql.DB
 }
 
 func NewBot(configFile *string, logFilename *string) *Scumbag {
@@ -64,7 +64,7 @@ func (bot *Scumbag) Start() {
 
 func (bot *Scumbag) Shutdown() {
 	bot.Log.Info("Shutting down.")
-	bot.db.Close()
+	bot.DB.Close()
 }
 
 func (bot *Scumbag) setupLogger(logFilename *string) {
@@ -87,7 +87,7 @@ func (bot *Scumbag) setupDatabase() {
 		bot.Log.WithField("error", err).Fatal("Database Connection Error")
 		quit <- true
 	}
-	bot.db = session
+	bot.DB = session
 }
 
 func (bot *Scumbag) setupClient() {

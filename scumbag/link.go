@@ -49,11 +49,11 @@ func (bot *Scumbag) SaveURLs(line *irc.Line) {
 		for _, url := range urls {
 			var urlMatch string
 
-			err := bot.db.QueryRow("SELECT url FROM links WHERE url=$1;", url).Scan(&urlMatch)
+			err := bot.DB.QueryRow("SELECT url FROM links WHERE url=$1;", url).Scan(&urlMatch)
 			switch {
 			case err == sql.ErrNoRows:
 				// Link doesn't exist, so create one.
-				if _, insertErr := bot.db.Exec("INSERT INTO links(nick, url, created_at) VALUES($1, $2, $3) RETURNING id;", nick, url, line.Time); insertErr != nil {
+				if _, insertErr := bot.DB.Exec("INSERT INTO links(nick, url, created_at) VALUES($1, $2, $3) RETURNING id;", nick, url, line.Time); insertErr != nil {
 					bot.Log.WithFields(log.Fields{"insertErr": insertErr}).Error("SaveURLs()")
 				}
 				bot.Log.WithField("URL", url).Debug("SaveURLs(): New Link")
@@ -75,7 +75,7 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 	if strings.HasPrefix(query, "/") && strings.HasSuffix(query, "/") {
 		urlQuery := strings.Replace(query, "/", "", 2)
 
-		rows, err := bot.db.Query(`SELECT nick, url FROM links WHERE url ILIKE '%' || $1 || '%' LIMIT $2;`, urlQuery, SEARCH_LIMIT)
+		rows, err := bot.DB.Query(`SELECT nick, url FROM links WHERE url ILIKE '%' || $1 || '%' LIMIT $2;`, urlQuery, SEARCH_LIMIT)
 		if err != nil {
 			bot.Log.WithField("err", err).Error("SearchLinks()")
 			return nil, err
@@ -102,7 +102,7 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 		// Nick search:  ?url oshuma
 		bot.Log.WithField("nick", query).Debug("SearchLinks(): Nick Search")
 
-		rows, err := bot.db.Query(`SELECT nick, url FROM links WHERE nick = $1 LIMIT $2;`, query, SEARCH_LIMIT)
+		rows, err := bot.DB.Query(`SELECT nick, url FROM links WHERE nick = $1 LIMIT $2;`, query, SEARCH_LIMIT)
 		if err != nil {
 			bot.Log.WithField("err", err).Error("SearchLinks()")
 			return nil, err
