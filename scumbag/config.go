@@ -13,7 +13,6 @@ type BotConfig struct {
 }
 
 type DatabaseConfig struct {
-	Host     string
 	Name     string
 	User     string
 	Password string
