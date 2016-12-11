@@ -68,8 +68,8 @@ func (bot *Scumbag) SaveURLs(line *irc.Line) {
 	}
 }
 
-func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
-	var results []Link
+func (bot *Scumbag) SearchLinks(query string) ([]*Link, error) {
+	var results []*Link
 
 	// Regex search:  ?url /imgur/
 	if strings.HasPrefix(query, "/") && strings.HasSuffix(query, "/") {
@@ -90,7 +90,7 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 				return nil, err
 			}
 
-			results = append(results, link)
+			results = append(results, &link)
 		}
 
 		err = rows.Err()
@@ -117,7 +117,7 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 				return nil, err
 			}
 
-			results = append(results, link)
+			results = append(results, &link)
 		}
 
 		err = rows.Err()
