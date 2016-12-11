@@ -75,7 +75,7 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 	if strings.HasPrefix(query, "/") && strings.HasSuffix(query, "/") {
 		urlQuery := strings.Replace(query, "/", "", 2)
 
-		rows, err := bot.DB.Query(`SELECT nick, url FROM links WHERE url ILIKE '%' || $1 || '%' LIMIT $2;`, urlQuery, SEARCH_LIMIT)
+		rows, err := bot.DB.Query(`SELECT nick, url FROM links WHERE url ILIKE '%' || $1 || '%' ORDER BY created_at DESC LIMIT $2;`, urlQuery, SEARCH_LIMIT)
 		if err != nil {
 			bot.Log.WithField("err", err).Error("SearchLinks()")
 			return nil, err
@@ -102,7 +102,7 @@ func (bot *Scumbag) SearchLinks(query string) ([]Link, error) {
 		// Nick search:  ?url oshuma
 		bot.Log.WithField("nick", query).Debug("SearchLinks(): Nick Search")
 
-		rows, err := bot.DB.Query(`SELECT nick, url FROM links WHERE nick = $1 LIMIT $2;`, query, SEARCH_LIMIT)
+		rows, err := bot.DB.Query(`SELECT nick, url FROM links WHERE nick = $1 ORDER BY created_at DESC LIMIT $2;`, query, SEARCH_LIMIT)
 		if err != nil {
 			bot.Log.WithField("err", err).Error("SearchLinks()")
 			return nil, err
