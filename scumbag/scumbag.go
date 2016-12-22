@@ -14,14 +14,17 @@ import (
 )
 
 const (
-	CMD_SPELL = "?sp"
-	CMD_URL   = "?url"
+	CMD_FIGLET = "?fig"
+	CMD_SPELL  = "?sp"
+	CMD_URL    = "?url"
 
 	// Default config file.
 	CONFIG_FILE = "config/bot.json"
 
 	// Default log file.
 	LOG_FILE = "log/scumbag.log"
+
+	CMD_ARG_REGEX = `(\w+)\s{1}\(sp\?\)`
 )
 
 var (
@@ -144,6 +147,8 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 	command, args := bot.getCommand(line)
 
 	switch command {
+	case CMD_FIGLET:
+		bot.HandleFiglet(channel, args)
 	case CMD_SPELL:
 		bot.HandleSpellCommand(channel, args)
 	case CMD_URL:

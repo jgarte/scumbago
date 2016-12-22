@@ -9,12 +9,13 @@ import (
 )
 
 const (
-	ASPELL = "/usr/bin/aspell"
+	ASPELL        = "/usr/bin/aspell"
+	ASPELL_REGEXP = `\A&\s\w+\s\d+\s\d+:\s(.+)\z`
 )
 
 var (
-	aspellRegexp = regexp.MustCompile(`\A&\s\w+\s\d+\s\d+:\s(.+)\z`)
-	wordRegexp   = regexp.MustCompile(`(\w+)\s{1}\(sp\?\)`)
+	aspellRegexp = regexp.MustCompile(ASPELL_REGEXP)
+	wordRegexp   = regexp.MustCompile(CMD_ARG_REGEX)
 )
 
 // Handler for "?sp <word>"
