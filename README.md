@@ -4,6 +4,7 @@
 
 #### OS
 * [Aspell](http://aspell.net/)
+* [Figlet](http://www.figlet.org/)
 * [Postgres](https://www.postgresql.org/)
 
 #### Go
