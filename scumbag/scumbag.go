@@ -11,10 +11,14 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	irc "github.com/fluffle/goirc/client"
+	"github.com/jzelinskie/geddit"
 )
 
 const (
+	CMD_ARG_REGEX = `(\w+)\s{1}\(sp\?\)`
+
 	CMD_FIGLET = "?fig"
+	CMD_REDDIT = "?reddit"
 	CMD_SPELL  = "?sp"
 	CMD_URL    = "?url"
 
@@ -24,7 +28,7 @@ const (
 	// Default log file.
 	LOG_FILE = "log/scumbag.log"
 
-	CMD_ARG_REGEX = `(\w+)\s{1}\(sp\?\)`
+	REDDIT_USER_AGENT = "scumbag"
 )
 
 var (
@@ -36,6 +40,7 @@ type Scumbag struct {
 	Config *BotConfig
 	DB     *sql.DB
 	Log    *log.Logger
+	Reddit *geddit.Session
 
 	ircClient *irc.Conn
 }
@@ -46,6 +51,7 @@ func NewBot(configFile *string, logFilename *string) *Scumbag {
 
 	bot.setupLogger(logFilename)
 	bot.setupDatabase()
+	bot.setupRedditSession()
 	bot.setupClient()
 	bot.setupHandlers()
 
@@ -90,6 +96,10 @@ func (bot *Scumbag) setupDatabase() {
 		quit <- true
 	}
 	bot.DB = session
+}
+
+func (bot *Scumbag) setupRedditSession() {
+	bot.Reddit = geddit.NewSession(REDDIT_USER_AGENT)
 }
 
 func (bot *Scumbag) setupClient() {
@@ -149,6 +159,8 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 	switch command {
 	case CMD_FIGLET:
 		bot.HandleFigletCommand(channel, args)
+	case CMD_REDDIT:
+		bot.HandleRedditCommand(channel, args)
 	case CMD_SPELL:
 		bot.HandleSpellCommand(channel, args)
 	case CMD_URL:
