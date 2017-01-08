@@ -148,7 +148,7 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 
 	switch command {
 	case CMD_FIGLET:
-		bot.HandleFiglet(channel, args)
+		bot.HandleFigletCommand(channel, args)
 	case CMD_SPELL:
 		bot.HandleSpellCommand(channel, args)
 	case CMD_URL:
