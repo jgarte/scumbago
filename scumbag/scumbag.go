@@ -83,7 +83,23 @@ func (bot *Scumbag) setupLogger(logFilename *string) {
 
 	logger := log.New()
 	logger.Out = logFile
-	logger.Level = log.DebugLevel
+
+	switch bot.Config.LogLevel {
+	case "Panic":
+		logger.Level = log.PanicLevel
+	case "Fatal":
+		logger.Level = log.FatalLevel
+	case "Error":
+		logger.Level = log.ErrorLevel
+	case "Warn":
+		logger.Level = log.WarnLevel
+	case "Info":
+		logger.Level = log.InfoLevel
+	case "Debug":
+		logger.Level = log.DebugLevel
+	default:
+		logger.Level = log.InfoLevel
+	}
 
 	bot.Log = logger
 }
