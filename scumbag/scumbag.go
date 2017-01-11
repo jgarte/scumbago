@@ -18,6 +18,7 @@ import (
 const (
 	CMD_ARG_REGEX = `(\w+)\s{1}\(sp\?\)`
 
+	CMD_ADMIN  = "?admin"
 	CMD_FIGLET = "?fig"
 	CMD_REDDIT = "?reddit"
 	CMD_SPELL  = "?sp"
@@ -83,6 +84,21 @@ func (bot *Scumbag) Start() {
 func (bot *Scumbag) Shutdown() {
 	bot.Log.Info("Shutting down.")
 	bot.DB.Close()
+}
+
+func (bot *Scumbag) Admin(nick string) bool {
+	for _, n := range bot.Config.Admins {
+		if n == nick {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Sends a PRIVMSG to `channel_or_nick`.
+func (bot *Scumbag) Msg(channel_or_nick string, message string) {
+	bot.ircClient.Privmsg(channel_or_nick, message)
 }
 
 func (bot *Scumbag) setupLogger(logFilename *string) {
@@ -173,16 +189,13 @@ func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 	go bot.processCommands(line)
 }
 
-// Sends a PRIVMSG to `channel_or_nick`.
-func (bot *Scumbag) Msg(channel_or_nick string, message string) {
-	bot.ircClient.Privmsg(channel_or_nick, message)
-}
-
 func (bot *Scumbag) processCommands(line *irc.Line) {
 	channel := line.Args[0]
 	command, args := bot.getCommand(line)
 
 	switch command {
+	case CMD_ADMIN:
+		bot.HandleAdminCommand(channel, args, line)
 	case CMD_FIGLET:
 		bot.HandleFigletCommand(channel, args)
 	case CMD_REDDIT:

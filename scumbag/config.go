@@ -9,6 +9,7 @@ type BotConfig struct {
 	Name     string
 	Server   string
 	Channel  string
+	Admins   []string
 	LogLevel string
 	Database *DatabaseConfig
 }

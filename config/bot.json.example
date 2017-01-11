@@ -3,6 +3,8 @@
   "Server":  "irc.example.com:6667",
   "Channel": "#scumbag",
 
+  "Admins": [ "admin_nick", "another_admin" ],
+
   "LogLevel": "Info",
 
   "Database": {
