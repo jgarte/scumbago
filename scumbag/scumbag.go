@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
 
 	"database/sql"
@@ -61,9 +62,18 @@ func NewBot(configFile *string, logFilename *string) *Scumbag {
 func (bot *Scumbag) Start() {
 	bot.Log.Info("Starting.")
 
+	go func() {
+		bot.Log.Debug("Setting up signal handler.")
+		signalChannel := make(chan os.Signal, 1)
+		signal.Notify(signalChannel, os.Interrupt)
+		<-signalChannel
+		bot.Log.Debug("SIGINT received.")
+		quit <- true
+	}()
+
 	if err := bot.ircClient.Connect(); err != nil {
 		bot.Log.WithField("error", err).Fatal("IRC Connection Error")
-		return
+		quit <- true
 	}
 
 	// Wait for disconnect.
