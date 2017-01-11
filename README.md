@@ -8,6 +8,7 @@
 * [Postgres](https://www.postgresql.org/)
 
 #### Go
+* go get [github.com/jzelinskie/geddit](https://github.com/jzelinskie/geddit)
 * go get [github.com/fluffle/goirc](https://github.com/fluffle/goirc)
 * go get [github.com/Sirupsen/logrus](https://github.com/Sirupsen/logrus)
 * go get [github.com/lib/pq](https://github.com/lib/pq)
