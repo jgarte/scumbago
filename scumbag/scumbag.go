@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"os"
-	"os/signal"
 	"strings"
 
 	"database/sql"
@@ -33,57 +32,56 @@ const (
 	REDDIT_USER_AGENT = "scumbag"
 )
 
-var (
-	// Channel to handle disconnect.
-	quit = make(chan bool)
-)
-
 type Scumbag struct {
 	Config *BotConfig
 	DB     *sql.DB
 	Log    *log.Logger
 	Reddit *geddit.Session
 
-	ircClient *irc.Conn
+	ircClient    *irc.Conn
+	disconnected chan struct{}
 }
 
-func NewBot(configFile *string, logFilename *string) *Scumbag {
+func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
 	botConfig := LoadConfig(configFile)
-	bot := &Scumbag{Config: botConfig}
+	bot := &Scumbag{
+		Config:       botConfig,
+		disconnected: make(chan struct{}),
+	}
 
-	bot.setupLogger(logFilename)
-	bot.setupDatabase()
+	if err := bot.setupLogger(logFilename); err != nil {
+		return nil, err
+	}
+
+	if err := bot.setupDatabase(); err != nil {
+		return nil, err
+	}
+
 	bot.setupRedditSession()
 	bot.setupClient()
 	bot.setupHandlers()
 
-	return bot
+	return bot, nil
 }
 
-func (bot *Scumbag) Start() {
+func (bot *Scumbag) Start() error {
 	bot.Log.Info("Starting.")
 
-	go func() {
-		bot.Log.Debug("Setting up signal handler.")
-		signalChannel := make(chan os.Signal, 1)
-		signal.Notify(signalChannel, os.Interrupt)
-		<-signalChannel
-		bot.Log.Debug("SIGINT received.")
-		quit <- true
-	}()
-
 	if err := bot.ircClient.Connect(); err != nil {
-		bot.Log.WithField("error", err).Fatal("IRC Connection Error")
-		quit <- true
+		bot.Log.WithField("error", err).Error("IRC Connection Error")
+		return err
 	}
 
-	// Wait for disconnect.
-	<-quit
+	return nil
+}
+
+func (bot *Scumbag) Wait() {
+	<-bot.disconnected
 }
 
 func (bot *Scumbag) Shutdown() {
 	bot.Log.Info("Shutting down.")
-	bot.DB.Close()
+	bot.ircClient.Quit("Fuck you. Fuck you. You're cool. I'm out.")
 }
 
 func (bot *Scumbag) Admin(nick string) bool {
@@ -101,10 +99,10 @@ func (bot *Scumbag) Msg(channel_or_nick string, message string) {
 	bot.ircClient.Privmsg(channel_or_nick, message)
 }
 
-func (bot *Scumbag) setupLogger(logFilename *string) {
+func (bot *Scumbag) setupLogger(logFilename *string) error {
 	logFile, err := os.OpenFile(*logFilename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	logger := log.New()
@@ -128,16 +126,20 @@ func (bot *Scumbag) setupLogger(logFilename *string) {
 	}
 
 	bot.Log = logger
+
+	return nil
 }
 
-func (bot *Scumbag) setupDatabase() {
+func (bot *Scumbag) setupDatabase() error {
 	databaseParams := fmt.Sprintf("dbname=%s user=%s password=%s", bot.Config.Database.Name, bot.Config.Database.User, bot.Config.Database.Password)
 	session, err := sql.Open("postgres", databaseParams)
 	if err != nil {
 		bot.Log.WithField("error", err).Fatal("Database Connection Error")
-		quit <- true
+		return err
 	}
 	bot.DB = session
+
+	return nil
 }
 
 func (bot *Scumbag) setupRedditSession() {
@@ -167,7 +169,9 @@ func (bot *Scumbag) setupHandlers() {
 
 	bot.ircClient.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
 		bot.Log.Info("Disconnected.")
-		quit <- true
+		bot.Log.Debug("Closing database connection.")
+		bot.DB.Close()
+		close(bot.disconnected)
 	})
 
 	bot.ircClient.HandleFunc("PRIVMSG", bot.msgHandler)

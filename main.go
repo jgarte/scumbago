@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"os"
+	"os/signal"
 
 	"github.com/Oshuma/scumbago/scumbag"
 )
@@ -11,7 +14,23 @@ func main() {
 	logFilename := flag.String("log", scumbag.LOG_FILE, "Bot log file")
 	flag.Parse()
 
-	bot := scumbag.NewBot(configFile, logFilename)
-	bot.Start()
-	defer bot.Shutdown()
+	bot, err := scumbag.NewBot(configFile, logFilename)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, os.Interrupt)
+	go func() {
+		<-signalChannel
+		bot.Shutdown()
+	}()
+
+	if err := bot.Start(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	bot.Wait()
 }
