@@ -22,6 +22,7 @@ const (
 	CMD_REDDIT = "?reddit"
 	CMD_SPELL  = "?sp"
 	CMD_URL    = "?url"
+	CMD_WIKI   = "?wp"
 
 	// Default config file.
 	CONFIG_FILE = "config/bot.json"
@@ -208,6 +209,8 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 		bot.HandleSpellCommand(channel, args)
 	case CMD_URL:
 		bot.HandleUrlCommand(channel, args)
+	case CMD_WIKI:
+		bot.HandleWikiCommand(channel, args)
 	}
 }
 
