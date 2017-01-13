@@ -17,12 +17,13 @@ import (
 const (
 	CMD_ARG_REGEX = `(\w+)\s{1}\(sp\?\)`
 
-	CMD_ADMIN  = "?admin"
-	CMD_FIGLET = "?fig"
-	CMD_REDDIT = "?reddit"
-	CMD_SPELL  = "?sp"
-	CMD_URL    = "?url"
-	CMD_WIKI   = "?wp"
+	CMD_ADMIN      = "?admin"
+	CMD_FIGLET     = "?fig"
+	CMD_REDDIT     = "?reddit"
+	CMD_SPELL      = "?sp"
+	CMD_URBAN_DICT = "?ud"
+	CMD_URL        = "?url"
+	CMD_WIKI       = "?wp"
 
 	// Default config file.
 	CONFIG_FILE = "config/bot.json"
@@ -207,6 +208,8 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 		bot.HandleRedditCommand(channel, args)
 	case CMD_SPELL:
 		bot.HandleSpellCommand(channel, args)
+	case CMD_URBAN_DICT:
+		bot.HandleUrbanDictCommand(channel, args)
 	case CMD_URL:
 		bot.HandleUrlCommand(channel, args)
 	case CMD_WIKI:
