@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	API_URL = "https://en.wikipedia.org/w/api.php?action=opensearch&search=%s&format=json&limit=1&redirects=resolve"
+	WIKI_API_URL = "https://en.wikipedia.org/w/api.php?action=opensearch&search=%s&format=json&limit=1&redirects=resolve"
 )
 
 type WikiResult struct {
@@ -21,7 +21,7 @@ type WikiResult struct {
 
 func (bot *Scumbag) HandleWikiCommand(channel string, query string) {
 	encodedQuery := strings.Replace(query, " ", "%20", -1)
-	requestUrl := fmt.Sprintf(API_URL, encodedQuery)
+	requestUrl := fmt.Sprintf(WIKI_API_URL, encodedQuery)
 
 	response, err := http.Get(requestUrl)
 	if err != nil {
@@ -44,8 +44,6 @@ func (bot *Scumbag) HandleWikiCommand(channel string, query string) {
 		bot.Log.WithField("error", err).Error("HandleWikiCommand()")
 		return
 	}
-
-	bot.Log.WithField("result", result).Debug("HandleWikiCommand()")
 
 	if len(result.Content) > 0 {
 		bot.Msg(channel, result.Content[0])
