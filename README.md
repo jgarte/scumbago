@@ -12,6 +12,8 @@
 * go get [github.com/fluffle/goirc](https://github.com/fluffle/goirc)
 * go get [github.com/Sirupsen/logrus](https://github.com/Sirupsen/logrus)
 * go get [github.com/lib/pq](https://github.com/lib/pq)
+* go get [golang.org/x/oauth2](https://godoc.org/golang.org/x/oauth2)
+* go get [github.com/dghubble/go-twitter/twitter](https://github.com/dghubble/go-twitter)
 
 ## Setup
 

@@ -12,6 +12,9 @@ import (
 	log "github.com/Sirupsen/logrus"
 	irc "github.com/fluffle/goirc/client"
 	"github.com/jzelinskie/geddit"
+
+	"github.com/dghubble/go-twitter/twitter"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -21,6 +24,7 @@ const (
 	CMD_FIGLET     = "?fig"
 	CMD_REDDIT     = "?reddit"
 	CMD_SPELL      = "?sp"
+	CMD_TWITTER    = "?twitter"
 	CMD_URBAN_DICT = "?ud"
 	CMD_URL        = "?url"
 	CMD_WIKI       = "?wp"
@@ -35,10 +39,11 @@ const (
 )
 
 type Scumbag struct {
-	Config *BotConfig
-	DB     *sql.DB
-	Log    *log.Logger
-	Reddit *geddit.Session
+	Config  *BotConfig
+	DB      *sql.DB
+	Log     *log.Logger
+	Reddit  *geddit.Session
+	Twitter *twitter.Client
 
 	ircClient    *irc.Conn
 	disconnected chan struct{}
@@ -60,7 +65,8 @@ func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
 	}
 
 	bot.setupRedditSession()
-	bot.setupClient()
+	bot.setupTwitterClient()
+	bot.setupIrcClient()
 	bot.setupHandlers()
 
 	return bot, nil
@@ -148,7 +154,15 @@ func (bot *Scumbag) setupRedditSession() {
 	bot.Reddit = geddit.NewSession(REDDIT_USER_AGENT)
 }
 
-func (bot *Scumbag) setupClient() {
+func (bot *Scumbag) setupTwitterClient() {
+	oauthConfig := &oauth2.Config{}
+	oauthToken := &oauth2.Token{AccessToken: bot.Config.Twitter.AccessToken}
+	httpClient := oauthConfig.Client(oauth2.NoContext, oauthToken)
+
+	bot.Twitter = twitter.NewClient(httpClient)
+}
+
+func (bot *Scumbag) setupIrcClient() {
 	clientConfig := irc.NewConfig(bot.Config.Name)
 	clientConfig.Server = bot.Config.Server
 
@@ -208,6 +222,8 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 		bot.HandleRedditCommand(channel, args)
 	case CMD_SPELL:
 		bot.HandleSpellCommand(channel, args)
+	case CMD_TWITTER:
+		bot.HandleTwitterCommand(channel, args)
 	case CMD_URBAN_DICT:
 		bot.HandleUrbanDictCommand(channel, args)
 	case CMD_URL:

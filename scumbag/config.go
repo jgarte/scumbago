@@ -12,12 +12,17 @@ type BotConfig struct {
 	Admins   []string
 	LogLevel string
 	Database *DatabaseConfig
+	Twitter  *TwitterConfig
 }
 
 type DatabaseConfig struct {
 	Name     string
 	User     string
 	Password string
+}
+
+type TwitterConfig struct {
+	AccessToken string
 }
 
 func LoadConfig(configFile *string) *BotConfig {

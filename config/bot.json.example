@@ -11,5 +11,9 @@
     "Name": "scumbag",
     "User": "database_user",
     "Password": "database_password"
+  },
+
+  "Twitter": {
+    "AccessToken": "foo_token"
   }
 }
