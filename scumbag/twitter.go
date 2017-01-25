@@ -12,11 +12,15 @@ func (bot *Scumbag) HandleTwitterCommand(channel string, query string) {
 
 	switch {
 	case strings.HasPrefix(query, "@"):
-		user := bot.screennameStatus(query)
-		if user != nil {
-			msg := fmt.Sprintf("@%s %s", user.ScreenName, user.Status.Text)
-			bot.Msg(channel, msg)
+		user, protected := bot.screennameStatus(query)
+
+		var msg string
+		if protected {
+			msg = fmt.Sprintf("Account is not public: %s", query)
+		} else {
+			msg = fmt.Sprintf("@%s %s", user.ScreenName, user.Status.Text)
 		}
+		bot.Msg(channel, msg)
 	default:
 		status := bot.searchTwitter(query)
 		if status != nil {
@@ -26,19 +30,23 @@ func (bot *Scumbag) HandleTwitterCommand(channel string, query string) {
 	}
 }
 
-func (bot *Scumbag) screennameStatus(screenname string) *twitter.User {
-	includeEntities := true
-
+func (bot *Scumbag) screennameStatus(screenname string) (*twitter.User, bool) {
 	user, _, err := bot.Twitter.Users.Show(&twitter.UserShowParams{
 		ScreenName:      strings.Replace(screenname, "@", "", 1),
-		IncludeEntities: &includeEntities,
+		IncludeEntities: twitter.Bool(true),
 	})
 	if err != nil {
 		bot.Log.WithField("error", err).Error("screennameStatus()")
-		return nil
+		return nil, true
 	}
 
-	return user
+	// Only return the User if their timeline is public.
+	if user.Protected {
+		bot.Log.WithField("user", user).Debug("screennameStatus(): User account is protected.")
+		return user, true
+	} else {
+		return user, false
+	}
 }
 
 func (bot *Scumbag) searchTwitter(query string) *twitter.Tweet {
