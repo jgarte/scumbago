@@ -27,6 +27,7 @@ const (
 	CMD_TWITTER    = "?twitter"
 	CMD_URBAN_DICT = "?ud"
 	CMD_URL        = "?url"
+	CMD_WEATHER    = "?weather"
 	CMD_WIKI       = "?wp"
 
 	// Default config file.
@@ -228,6 +229,8 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 		bot.HandleUrbanDictCommand(channel, args)
 	case CMD_URL:
 		bot.HandleUrlCommand(channel, args)
+	case CMD_WEATHER:
+		bot.HandleWeatherCommand(channel, args)
 	case CMD_WIKI:
 		bot.HandleWikiCommand(channel, args)
 	}

@@ -6,13 +6,14 @@ import (
 )
 
 type BotConfig struct {
-	Name     string
-	Server   string
-	Channel  string
-	Admins   []string
-	LogLevel string
-	Database *DatabaseConfig
-	Twitter  *TwitterConfig
+	Name               string
+	Server             string
+	Channel            string
+	Admins             []string
+	LogLevel           string
+	Database           *DatabaseConfig
+	Twitter            *TwitterConfig
+	WeatherUnderground *WeatherUndergroundConfig
 }
 
 type DatabaseConfig struct {
@@ -23,6 +24,10 @@ type DatabaseConfig struct {
 
 type TwitterConfig struct {
 	AccessToken string
+}
+
+type WeatherUndergroundConfig struct {
+	Key string
 }
 
 func LoadConfig(configFile *string) *BotConfig {

@@ -15,5 +15,9 @@
 
   "Twitter": {
     "AccessToken": "foo_token"
+  },
+
+  "WeatherUnderground": {
+    "Key": "foo_key"
   }
 }
