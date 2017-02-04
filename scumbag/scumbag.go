@@ -36,7 +36,7 @@ const (
 	// Default log file.
 	LOG_FILE = "log/scumbag.log"
 
-	REDDIT_USER_AGENT = "scumbag"
+	REDDIT_USER_AGENT = "scumbag v0.666"
 )
 
 type Scumbag struct {
