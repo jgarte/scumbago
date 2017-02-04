@@ -18,15 +18,15 @@ func (bot *Scumbag) HandleRedditCommand(channel string, query string) {
 	args := strings.Fields(query)
 
 	if len(args) == 1 {
-		subredditSubmission(bot, channel, query)
+		randomSubredditSubmission(bot, channel, query)
 	} else {
 		switch args[0] {
-		case "-r":
-			randomSubredditSubmission(bot, channel, args[1])
-		case "-random":
-			randomSubredditSubmission(bot, channel, args[1])
+		case "-t":
+			subredditSubmission(bot, channel, args[1])
+		case "-top":
+			subredditSubmission(bot, channel, args[1])
 		default:
-			subredditSubmission(bot, channel, query)
+			randomSubredditSubmission(bot, channel, query)
 		}
 	}
 }
@@ -45,7 +45,7 @@ func subredditSubmission(bot *Scumbag, channel string, subreddit string) {
 	bot.Log.WithField("subreddit", subreddit).Debug("subredditSubmission()")
 
 	opts := geddit.ListingOptions{
-		Limit: 5,
+		Limit: 3,
 	}
 
 	submissions, err := bot.Reddit.SubredditSubmissions(subreddit, geddit.HotSubmissions, opts)
