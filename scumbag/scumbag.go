@@ -24,6 +24,7 @@ const (
 	CMD_FIGLET     = "?fig"
 	CMD_REDDIT     = "?reddit"
 	CMD_SPELL      = "?sp"
+	CMD_TRUMP      = "?trump"
 	CMD_TWITTER    = "?twitter"
 	CMD_URBAN_DICT = "?ud"
 	CMD_URL        = "?url"
@@ -223,6 +224,8 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 		bot.HandleRedditCommand(channel, args)
 	case CMD_SPELL:
 		bot.HandleSpellCommand(channel, args)
+	case CMD_TRUMP:
+		bot.HandleTrumpCommand(channel, args)
 	case CMD_TWITTER:
 		bot.HandleTwitterCommand(channel, args)
 	case CMD_URBAN_DICT:
