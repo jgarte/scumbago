@@ -2,7 +2,6 @@ package scumbag
 
 import (
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -213,11 +212,7 @@ func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 
 func (bot *Scumbag) processCommands(line *irc.Line) {
 	channel := line.Args[0]
-	command, args, err := bot.getCommand(line)
-	if err != nil {
-		bot.Log.WithField("error", err).Error("processCommands()")
-		return
-	}
+	command, args := bot.getCommand(line)
 
 	switch command {
 	case CMD_ADMIN:
@@ -241,15 +236,15 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 	}
 }
 
-func (bot *Scumbag) getCommand(line *irc.Line) (string, string, error) {
+func (bot *Scumbag) getCommand(line *irc.Line) (string, string) {
 	fields := strings.Fields(line.Args[1])
 
-	if len(fields) > 1 {
-		command := fields[0]
-		args := strings.Join(fields[1:], " ")
+	command := fields[0]
 
-		return command, args, nil
+	if len(fields) > 1 {
+		args := strings.Join(fields[1:], " ")
+		return command, args
 	} else {
-		return "", "", errors.New("getCommand(): Could not get line fields")
+		return command, ""
 	}
 }

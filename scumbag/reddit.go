@@ -20,6 +20,10 @@ func (bot *Scumbag) HandleRedditCommand(channel string, query string) {
 	if len(args) == 1 {
 		randomSubredditSubmission(bot, channel, query)
 	} else {
+		if len(args) == 0 {
+			return
+		}
+
 		switch args[0] {
 		case "-t":
 			subredditSubmission(bot, channel, args[1])

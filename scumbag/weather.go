@@ -75,6 +75,10 @@ func (bot *Scumbag) HandleWeatherCommand(channel string, query string) {
 	if len(args) == 1 {
 		currentConditions(bot, channel, args)
 	} else {
+		if len(args) == 0 {
+			return
+		}
+
 		switch args[0] {
 		case "-forecast":
 			currentForecast(bot, channel, args)
