@@ -240,17 +240,15 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 }
 
 func (bot *Scumbag) getCommand(line *irc.Line) (string, string) {
-	if len(line.Args) <= 0 {
-		return "", ""
+	if len(line.Args) > 1 {
+		fields := strings.Fields(line.Args[1])
+
+		if len(fields) > 0 {
+			command := fields[0]
+			args := strings.Join(fields[1:], " ")
+			return command, args
+		}
 	}
 
-	fields := strings.Fields(line.Args[1])
-
-	if len(fields) > 1 {
-		command := fields[0]
-		args := strings.Join(fields[1:], " ")
-		return command, args
-	} else {
-		return "", ""
-	}
+	return "", ""
 }
