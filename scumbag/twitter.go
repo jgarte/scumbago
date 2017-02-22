@@ -18,7 +18,11 @@ func (bot *Scumbag) HandleTwitterCommand(channel string, query string) {
 		if protected {
 			msg = fmt.Sprintf("Account is not public: %s", query)
 		} else {
-			msg = fmt.Sprintf("@%s %s", user.ScreenName, user.Status.Text)
+			if user.ScreenName != "" && user.Status != nil {
+				msg = fmt.Sprintf("@%s %s", user.ScreenName, user.Status.Text)
+			} else {
+				msg = fmt.Sprintf("Account has no tweets: %s", query)
+			}
 		}
 		bot.Msg(channel, msg)
 	default:
