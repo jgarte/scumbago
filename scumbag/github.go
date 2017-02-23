@@ -10,8 +10,9 @@ const (
 )
 
 type GithubEvent struct {
-	Repo    GithubRepo    `json:"repo"`
 	Payload GithubPayload `json:"payload"`
+	Repo    GithubRepo    `json:"repo"`
+	Type    string        `json:"type"`
 }
 
 type GithubRepo struct {
@@ -21,11 +22,17 @@ type GithubRepo struct {
 
 type GithubPayload struct {
 	Commits []GithubEventCommit `json:"commits"`
+	Comment GithubEventComment  `json:"comment"`
 }
 
 type GithubEventCommit struct {
 	Message string `json:"message"`
 	Url     string `json:"url"`
+}
+
+type GithubEventComment struct {
+	Body    string `json:"body"`
+	HtmlUrl string `json:"html_url"`
 }
 
 type GithubCommit struct {
@@ -58,26 +65,43 @@ func (bot *Scumbag) HandleGithubCommand(channel string, username string) {
 	if len(events) > 0 {
 		event := events[0]
 
-		if len(event.Payload.Commits) > 0 {
-			eventCommit := event.Payload.Commits[len(event.Payload.Commits)-1]
-
-			content, err := getContent(eventCommit.Url)
-			if err != nil {
-				bot.Log.WithField("error", err).Error("HandleGithubCommand()")
-				return
-			}
-
-			var commit GithubCommit
-			err = json.Unmarshal(content, &commit)
-			if err != nil {
-				bot.Log.WithField("error", err).Error("HandleGithubCommand()")
-				return
-			}
-
-			eventMsg := fmt.Sprintf("%s: %s", event.Repo.Name, eventCommit.Message)
-
-			bot.Msg(channel, eventMsg)
-			bot.Msg(channel, commit.HtmlUrl)
+		switch event.Type {
+		case "PushEvent":
+			pushEvent(bot, channel, event)
+		case "IssueCommentEvent":
+			issueCommentEvent(bot, channel, event)
+		default:
+			bot.Log.WithField("event", event).Warn("HandleGithubCommand(): Unhandled event")
 		}
 	}
+}
+
+func pushEvent(bot *Scumbag, channel string, event GithubEvent) {
+	if len(event.Payload.Commits) > 0 {
+		eventCommit := event.Payload.Commits[len(event.Payload.Commits)-1]
+
+		content, err := getContent(eventCommit.Url)
+		if err != nil {
+			bot.Log.WithField("error", err).Error("HandleGithubCommand()")
+			return
+		}
+
+		var commit GithubCommit
+		err = json.Unmarshal(content, &commit)
+		if err != nil {
+			bot.Log.WithField("error", err).Error("HandleGithubCommand()")
+			return
+		}
+
+		eventMsg := fmt.Sprintf("%s: %s", event.Repo.Name, eventCommit.Message)
+
+		bot.Msg(channel, eventMsg)
+		bot.Msg(channel, commit.HtmlUrl)
+	}
+}
+
+func issueCommentEvent(bot *Scumbag, channel string, event GithubEvent) {
+	eventMsg := fmt.Sprintf("%s: %s", event.Repo.Name, event.Payload.Comment.Body)
+	bot.Msg(channel, eventMsg)
+	bot.Msg(channel, event.Payload.Comment.HtmlUrl)
 }
