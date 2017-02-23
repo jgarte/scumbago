@@ -82,8 +82,10 @@ func randomSubredditSubmission(bot *Scumbag, channel string, subreddit string) {
 
 	rand.Seed(time.Now().Unix())
 
-	submission := submissions[rand.Intn(len(submissions))]
-	msg(bot, channel, submission)
+	if len(submissions) > 0 {
+		submission := submissions[rand.Intn(len(submissions))]
+		msg(bot, channel, submission)
+	}
 }
 
 func msg(bot *Scumbag, channel string, submission *geddit.Submission) {
