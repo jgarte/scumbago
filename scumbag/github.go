@@ -59,7 +59,7 @@ func (bot *Scumbag) HandleGithubCommand(channel string, username string) {
 		event := events[0]
 
 		if len(event.Payload.Commits) > 0 {
-			eventCommit := event.Payload.Commits[0]
+			eventCommit := event.Payload.Commits[len(event.Payload.Commits)-1]
 
 			content, err := getContent(eventCommit.Url)
 			if err != nil {
