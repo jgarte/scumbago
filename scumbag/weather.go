@@ -3,8 +3,6 @@ package scumbag
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strings"
 )
 
@@ -173,19 +171,4 @@ func hourlyForecast(bot *Scumbag, channel string, args []string) {
 
 	msg := strings.Join(forecast, "  ")
 	bot.Msg(channel, msg)
-}
-
-func getContent(requestUrl string) ([]byte, error) {
-	response, err := http.Get(requestUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	content, err := ioutil.ReadAll(response.Body)
-	response.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	return content, nil
 }

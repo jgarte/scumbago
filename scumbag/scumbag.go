@@ -3,6 +3,8 @@ package scumbag
 import (
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 
@@ -251,4 +253,19 @@ func (bot *Scumbag) getCommand(line *irc.Line) (string, string) {
 	}
 
 	return "", ""
+}
+
+func getContent(requestUrl string) ([]byte, error) {
+	response, err := http.Get(requestUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := ioutil.ReadAll(response.Body)
+	response.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return content, nil
 }
