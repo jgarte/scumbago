@@ -24,6 +24,7 @@ const (
 
 	CMD_ADMIN      = "?admin"
 	CMD_FIGLET     = "?fig"
+	CMD_GITHUB     = "?gh"
 	CMD_REDDIT     = "?reddit"
 	CMD_SPELL      = "?sp"
 	CMD_TRUMP      = "?trump"
@@ -222,6 +223,8 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 		bot.HandleAdminCommand(channel, args, line)
 	case CMD_FIGLET:
 		bot.HandleFigletCommand(channel, args)
+	case CMD_GITHUB:
+		bot.HandleGithubCommand(channel, args)
 	case CMD_REDDIT:
 		bot.HandleRedditCommand(channel, args)
 	case CMD_SPELL:
