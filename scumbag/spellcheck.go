@@ -18,39 +18,50 @@ var (
 	wordRegexp   = regexp.MustCompile(CMD_ARG_REGEX)
 )
 
+type SpellcheckCommand struct {
+	bot     *Scumbag
+	channel string
+	word    string
+}
+
 // Handler for "?sp <word>"
-func (bot *Scumbag) HandleSpellCommand(channel string, args string) {
-	response, err := bot.Spellcheck(args)
+func (cmd *SpellcheckCommand) Run() {
+	response, err := cmd.Spellcheck(cmd.word)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("HandleSpellCommand()")
+		cmd.bot.Log.WithField("error", err).Error("SpellcheckCommand.Run()")
 		return
 	}
 
-	bot.Msg(channel, response)
+	cmd.bot.Msg(cmd.channel, response)
 }
 
-// Searches for text like "some word (sp?) to spellcheck"
+// Called from a goroutine to search for text like "some word (sp?) to spellcheck"
 func (bot *Scumbag) SpellcheckLine(line *irc.Line) {
+	if len(line.Args) <= 0 {
+		return
+	}
+
 	channel := line.Args[0]
 
-	if word, ok := bot.getWordFromLine(line); ok == true {
-		response, err := bot.Spellcheck(word)
+	cmd := &SpellcheckCommand{bot: bot, channel: channel}
+	if word, ok := cmd.getWordFromLine(line); ok == true {
+		response, err := cmd.Spellcheck(word)
 		if err != nil {
-			bot.Log.WithField("error", err).Error("SpellcheckLine()")
+			cmd.bot.Log.WithField("error", err).Error("Scumbag.SpellcheckLine()")
 			return
 		}
 
-		bot.Msg(channel, response)
+		cmd.bot.Msg(cmd.channel, response)
 	}
 }
 
-func (bot *Scumbag) Spellcheck(word string) (string, error) {
+func (cmd *SpellcheckCommand) Spellcheck(word string) (string, error) {
 	echo := exec.Command("echo", word)
 	aspell := exec.Command(ASPELL, "pipe")
 
 	echoOut, err := echo.StdoutPipe()
 	if err != nil {
-		bot.Log.WithField("error", err).Error("Spellcheck()")
+		cmd.bot.Log.WithField("error", err).Error("SpellcheckCommand.Spellcheck()")
 		return "", err
 	}
 	echo.Start()
@@ -58,7 +69,7 @@ func (bot *Scumbag) Spellcheck(word string) (string, error) {
 	aspell.Stdin = echoOut
 	output, err := aspell.Output()
 	if err != nil {
-		bot.Log.WithField("error", err).Error("Spellcheck()")
+		cmd.bot.Log.WithField("error", err).Error("SpellcheckCommand.Spellcheck()")
 		return "", err
 	}
 	line := strings.Split(string(output[:]), "\n")[1]
@@ -75,7 +86,7 @@ func (bot *Scumbag) Spellcheck(word string) (string, error) {
 	}
 }
 
-func (bot *Scumbag) getWordFromLine(line *irc.Line) (string, bool) {
+func (cmd *SpellcheckCommand) getWordFromLine(line *irc.Line) (string, bool) {
 	msg := line.Args[1]
 	match := wordRegexp.FindStringSubmatch(msg)
 	if len(match) > 0 {

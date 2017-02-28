@@ -43,6 +43,11 @@ const (
 	REDDIT_USER_AGENT = "scumbag v0.666"
 )
 
+type Command interface {
+	// TODO: Maybe rewrite this to accept 0-N number of args instead of passing as fields.
+	Run()
+}
+
 type Scumbag struct {
 	Config  *BotConfig
 	DB      *sql.DB
@@ -215,47 +220,55 @@ func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 }
 
 func (bot *Scumbag) processCommands(line *irc.Line) {
-	channel := line.Args[0]
-	command, args := bot.getCommand(line)
-
-	switch command {
-	case CMD_ADMIN:
-		bot.HandleAdminCommand(channel, args, line)
-	case CMD_FIGLET:
-		bot.HandleFigletCommand(channel, args)
-	case CMD_GITHUB:
-		bot.HandleGithubCommand(channel, args)
-	case CMD_REDDIT:
-		bot.HandleRedditCommand(channel, args)
-	case CMD_SPELL:
-		bot.HandleSpellCommand(channel, args)
-	case CMD_TRUMP:
-		bot.HandleTrumpCommand(channel, args)
-	case CMD_TWITTER:
-		bot.HandleTwitterCommand(channel, args)
-	case CMD_URBAN_DICT:
-		bot.HandleUrbanDictCommand(channel, args)
-	case CMD_URL:
-		bot.HandleUrlCommand(channel, args)
-	case CMD_WEATHER:
-		bot.HandleWeatherCommand(channel, args)
-	case CMD_WIKI:
-		bot.HandleWikiCommand(channel, args)
+	command := bot.getCommand(line)
+	if command == nil {
+		return
 	}
+	command.Run()
 }
 
-func (bot *Scumbag) getCommand(line *irc.Line) (string, string) {
-	if len(line.Args) > 1 {
-		fields := strings.Fields(line.Args[1])
+func (bot *Scumbag) getCommand(line *irc.Line) Command {
+	if len(line.Args) <= 0 {
+		bot.Log.WithField("line", line).Debug("getCommand(): Line has no args")
+		return nil
+	}
+	channel := line.Args[0]
 
-		if len(fields) > 0 {
-			command := fields[0]
-			args := strings.Join(fields[1:], " ")
-			return command, args
-		}
+	fields := strings.Fields(line.Args[1])
+	if len(fields) <= 0 {
+		bot.Log.WithField("line", line).Debug("getCommand(): No fields in line args")
+		return nil
+	}
+	commandName := fields[0]
+	args := strings.Join(fields[1:], " ")
+
+	var command Command
+	switch commandName {
+	case CMD_ADMIN:
+		command = &AdminCommand{bot: bot, channel: channel, args: args, line: line}
+	case CMD_FIGLET:
+		command = &FigletCommand{bot: bot, channel: channel, phrase: args}
+	case CMD_GITHUB:
+		command = &GithubCommand{bot: bot, channel: channel, username: args}
+	case CMD_REDDIT:
+		command = &RedditCommand{bot: bot, channel: channel, query: args}
+	case CMD_SPELL:
+		command = &SpellcheckCommand{bot: bot, channel: channel, word: args}
+	case CMD_TRUMP:
+		command = &TrumpCommand{bot: bot, channel: channel}
+	case CMD_TWITTER:
+		command = &TwitterCommand{bot: bot, channel: channel, query: args}
+	case CMD_URBAN_DICT:
+		command = &UrbanDictionaryCommand{bot: bot, channel: channel, query: args}
+	case CMD_URL:
+		command = &LinkCommand{bot: bot, channel: channel, query: args}
+	case CMD_WEATHER:
+		command = &WeatherCommand{bot: bot, channel: channel, query: args}
+	case CMD_WIKI:
+		command = &WikiCommand{bot: bot, channel: channel, query: args}
 	}
 
-	return "", ""
+	return command
 }
 
 func getContent(requestUrl string) ([]byte, error) {

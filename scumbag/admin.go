@@ -10,24 +10,30 @@ const (
 	CMD_NICK = "nick"
 )
 
-func (bot *Scumbag) HandleAdminCommand(channel string, command_and_args string, line *irc.Line) {
-	if !bot.Admin(line.Nick) {
-		msg := line.Nick + ": Fuck off."
-		bot.Msg(channel, msg)
+type AdminCommand struct {
+	bot     *Scumbag
+	channel string
+	args    string
+	line    *irc.Line
+}
+
+func (cmd *AdminCommand) Run() {
+	if !cmd.bot.Admin(cmd.line.Nick) {
+		cmd.bot.Msg(cmd.channel, "Fuck off.")
 		return
 	}
 
-	fields := strings.Fields(command_and_args)
+	fields := strings.Fields(cmd.args)
 
 	if len(fields) > 1 {
 		command := fields[0]
-		args := strings.Join(fields[1:], " ")
+		commandArgs := strings.Join(fields[1:], " ")
 
 		switch command {
 		case CMD_NICK:
-			bot.ircClient.Nick(args)
+			cmd.bot.ircClient.Nick(commandArgs)
 		}
 	} else {
-		bot.Log.WithField("command_and_args", command_and_args).Error("HandleAdminCommand(): Could not get command args")
+		cmd.bot.Log.WithField("args", cmd.args).Error("AdminCommand.Run(): Could not get command args")
 	}
 }

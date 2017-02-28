@@ -67,11 +67,17 @@ type HourlyTemp struct {
 	Fahrenheit string `json:"english"`
 }
 
-func (bot *Scumbag) HandleWeatherCommand(channel string, query string) {
-	args := strings.Fields(query)
+type WeatherCommand struct {
+	bot     *Scumbag
+	channel string
+	query   string
+}
+
+func (cmd *WeatherCommand) Run() {
+	args := strings.Fields(cmd.query)
 
 	if len(args) == 1 {
-		currentConditions(bot, channel, args)
+		cmd.currentConditions(args)
 	} else {
 		if len(args) == 0 {
 			return
@@ -79,58 +85,81 @@ func (bot *Scumbag) HandleWeatherCommand(channel string, query string) {
 
 		switch args[0] {
 		case "-forecast":
-			currentForecast(bot, channel, args)
+			cmd.currentForecast(args)
 		case "-hourly":
-			hourlyForecast(bot, channel, args)
+			cmd.hourlyForecast(args)
 		default:
-			bot.Msg(channel, "?weather <location/zip>")
-			bot.Msg(channel, "?weather -forecast <location/zip>")
-			bot.Msg(channel, "?weather -hourly <location/zip>")
+			cmd.bot.Msg(cmd.channel, "?weather <location/zip>")
+			cmd.bot.Msg(cmd.channel, "?weather -forecast <location/zip>")
+			cmd.bot.Msg(cmd.channel, "?weather -hourly <location/zip>")
 		}
 	}
 }
 
-func currentConditions(bot *Scumbag, channel string, args []string) {
-	apiKey := bot.Config.WeatherUnderground.Key
+// func (bot *Scumbag) HandleWeatherCommand(channel string, query string) {
+//   args := strings.Fields(query)
+
+//   if len(args) == 1 {
+//     currentConditions(bot, channel, args)
+//   } else {
+//     if len(args) == 0 {
+//       return
+//     }
+
+//     switch args[0] {
+//     case "-forecast":
+//       currentForecast(bot, channel, args)
+//     case "-hourly":
+//       hourlyForecast(bot, channel, args)
+//     default:
+//       bot.Msg(channel, "?weather <location/zip>")
+//       bot.Msg(channel, "?weather -forecast <location/zip>")
+//       bot.Msg(channel, "?weather -hourly <location/zip>")
+//     }
+//   }
+// }
+
+func (cmd *WeatherCommand) currentConditions(args []string) {
+	apiKey := cmd.bot.Config.WeatherUnderground.Key
 	requestUrl := fmt.Sprintf(WEATHER_API_URL, apiKey, "conditions", args[0])
-	bot.Log.WithField("requestUrl", requestUrl).Debug("currentConditions()")
+	cmd.bot.Log.WithField("requestUrl", requestUrl).Debug("WeatherCommand.currentConditions()")
 
 	content, err := getContent(requestUrl)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("HandleWeatherCommand()")
+		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.HandleWeatherCommand()")
 		return
 	}
 
 	var result ConditionsResponse
 	err = json.Unmarshal(content, &result)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("HandleWeatherCommand()")
+		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.HandleWeatherCommand()")
 		return
 	}
 
 	if result.Observation.Temperature != "" {
 		msg := fmt.Sprintf("%s / %s humidity", result.Observation.Temperature, result.Observation.Humidity)
-		bot.Msg(channel, msg)
+		cmd.bot.Msg(cmd.channel, msg)
 	} else {
-		bot.Msg(channel, "WTF zip code is that?")
+		cmd.bot.Msg(cmd.channel, "WTF zip code is that?")
 	}
 }
 
-func currentForecast(bot *Scumbag, channel string, args []string) {
-	apiKey := bot.Config.WeatherUnderground.Key
+func (cmd *WeatherCommand) currentForecast(args []string) {
+	apiKey := cmd.bot.Config.WeatherUnderground.Key
 	requestUrl := fmt.Sprintf(WEATHER_API_URL, apiKey, "forecast", args[1])
-	bot.Log.WithField("requestUrl", requestUrl).Debug("currentForecast()")
+	cmd.bot.Log.WithField("requestUrl", requestUrl).Debug("WeatherCommand.currentForecast()")
 
 	content, err := getContent(requestUrl)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("currentForecast()")
+		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.currentForecast()")
 		return
 	}
 
 	var result ForecastResponse
 	err = json.Unmarshal(content, &result)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("currentForecast()")
+		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.currentForecast()")
 		return
 	}
 
@@ -140,24 +169,24 @@ func currentForecast(bot *Scumbag, channel string, args []string) {
 	}
 
 	msg := strings.Join(forecast, "  ")
-	bot.Msg(channel, msg)
+	cmd.bot.Msg(cmd.channel, msg)
 }
 
-func hourlyForecast(bot *Scumbag, channel string, args []string) {
-	apiKey := bot.Config.WeatherUnderground.Key
+func (cmd *WeatherCommand) hourlyForecast(args []string) {
+	apiKey := cmd.bot.Config.WeatherUnderground.Key
 	requestUrl := fmt.Sprintf(WEATHER_API_URL, apiKey, "hourly", args[1])
-	bot.Log.WithField("requestUrl", requestUrl).Debug("hourlyForecast()")
+	cmd.bot.Log.WithField("requestUrl", requestUrl).Debug("WeatherCommand.hourlyForecast()")
 
 	content, err := getContent(requestUrl)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("hourlyForecast()")
+		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.hourlyForecast()")
 		return
 	}
 
 	var result HourlyResponse
 	err = json.Unmarshal(content, &result)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("hourlyForecast()")
+		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.hourlyForecast()")
 		return
 	}
 
@@ -170,5 +199,5 @@ func hourlyForecast(bot *Scumbag, channel string, args []string) {
 	forecast = forecast[:3]
 
 	msg := strings.Join(forecast, "  ")
-	bot.Msg(channel, msg)
+	cmd.bot.Msg(cmd.channel, msg)
 }

@@ -53,19 +53,25 @@ type GithubCommitStats struct {
 	Deletions int `json:"deletions"`
 }
 
-func (bot *Scumbag) HandleGithubCommand(channel string, username string) {
-	requestUrl := fmt.Sprintf(GITHUB_USER_EVENTS_URL, username)
+type GithubCommand struct {
+	bot      *Scumbag
+	channel  string
+	username string
+}
+
+func (cmd *GithubCommand) Run() {
+	requestUrl := fmt.Sprintf(GITHUB_USER_EVENTS_URL, cmd.username)
 
 	content, err := getContent(requestUrl)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("HandleGithubCommand()")
+		cmd.bot.Log.WithField("error", err).Error("HandleGithubCommand()")
 		return
 	}
 
 	events := make([]GithubEvent, 0)
 	err = json.Unmarshal(content, &events)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("HandleGithubCommand()")
+		cmd.bot.Log.WithField("error", err).Error("HandleGithubCommand()")
 		return
 	}
 
@@ -74,49 +80,49 @@ func (bot *Scumbag) HandleGithubCommand(channel string, username string) {
 
 		switch event.Type {
 		case "PushEvent":
-			pushEvent(bot, channel, event)
+			cmd.pushEvent(event)
 		case "IssueCommentEvent":
-			issueCommentEvent(bot, channel, event)
+			cmd.issueCommentEvent(event)
 		case "PullRequestEvent":
-			pullRequestEvent(bot, channel, event)
+			cmd.pullRequestEvent(event)
 		default:
-			bot.Log.WithField("event", event).Warn("HandleGithubCommand(): Unhandled event")
+			cmd.bot.Log.WithField("event", event).Warn("HandleGithubCommand(): Unhandled event")
 		}
 	}
 }
 
-func pushEvent(bot *Scumbag, channel string, event GithubEvent) {
+func (cmd *GithubCommand) pushEvent(event GithubEvent) {
 	if len(event.Payload.Commits) > 0 {
 		eventCommit := event.Payload.Commits[len(event.Payload.Commits)-1]
 
 		content, err := getContent(eventCommit.Url)
 		if err != nil {
-			bot.Log.WithField("error", err).Error("HandleGithubCommand()")
+			cmd.bot.Log.WithField("error", err).Error("HandleGithubCommand()")
 			return
 		}
 
 		var commit GithubCommit
 		err = json.Unmarshal(content, &commit)
 		if err != nil {
-			bot.Log.WithField("error", err).Error("HandleGithubCommand()")
+			cmd.bot.Log.WithField("error", err).Error("HandleGithubCommand()")
 			return
 		}
 
 		eventMsg := fmt.Sprintf("%s: %s", event.Repo.Name, eventCommit.Message)
 
-		bot.Msg(channel, eventMsg)
-		bot.Msg(channel, commit.HtmlUrl)
+		cmd.bot.Msg(cmd.channel, eventMsg)
+		cmd.bot.Msg(cmd.channel, commit.HtmlUrl)
 	}
 }
 
-func issueCommentEvent(bot *Scumbag, channel string, event GithubEvent) {
+func (cmd *GithubCommand) issueCommentEvent(event GithubEvent) {
 	eventMsg := fmt.Sprintf("%s: %s", event.Repo.Name, event.Payload.Comment.Body)
-	bot.Msg(channel, eventMsg)
-	bot.Msg(channel, event.Payload.Comment.HtmlUrl)
+	cmd.bot.Msg(cmd.channel, eventMsg)
+	cmd.bot.Msg(cmd.channel, event.Payload.Comment.HtmlUrl)
 }
 
-func pullRequestEvent(bot *Scumbag, channel string, event GithubEvent) {
+func (cmd *GithubCommand) pullRequestEvent(event GithubEvent) {
 	eventMsg := fmt.Sprintf("%s: PR: %s", event.Repo.Name, event.Payload.PullRequest.Title)
-	bot.Msg(channel, eventMsg)
-	bot.Msg(channel, event.Payload.PullRequest.HtmlUrl)
+	cmd.bot.Msg(cmd.channel, eventMsg)
+	cmd.bot.Msg(cmd.channel, event.Payload.PullRequest.HtmlUrl)
 }

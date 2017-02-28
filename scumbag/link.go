@@ -25,11 +25,17 @@ type Link struct {
 	CreatedAt time.Time
 }
 
+type LinkCommand struct {
+	bot     *Scumbag
+	channel string
+	query   string
+}
+
 // Handler for "?url <nick_or_regex>"
-func (bot *Scumbag) HandleUrlCommand(channel string, args string) {
-	links, err := bot.SearchLinks(args)
+func (cmd *LinkCommand) Run() {
+	links, err := cmd.SearchLinks(cmd.query)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("HandleUrlCommand()")
+		cmd.bot.Log.WithField("error", err).Error("LinkCommand.Run()")
 		return
 	}
 
@@ -38,9 +44,10 @@ func (bot *Scumbag) HandleUrlCommand(channel string, args string) {
 		response[i] = link.Url
 	}
 
-	bot.Msg(channel, strings.Join(response, URL_SEP))
+	cmd.bot.Msg(cmd.channel, strings.Join(response, URL_SEP))
 }
 
+// Called from a goroutine to save links from `line`.
 func (bot *Scumbag) SaveURLs(line *irc.Line) {
 	nick := line.Nick
 	msg := line.Args[1]
@@ -68,16 +75,16 @@ func (bot *Scumbag) SaveURLs(line *irc.Line) {
 	}
 }
 
-func (bot *Scumbag) SearchLinks(query string) ([]*Link, error) {
+func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 	var results []*Link
 
 	// Regex search:  ?url /imgur/
 	if strings.HasPrefix(query, "/") && strings.HasSuffix(query, "/") {
 		urlQuery := strings.Replace(query, "/", "", 2)
 
-		rows, err := bot.DB.Query(`SELECT nick, url FROM links WHERE url ILIKE '%' || $1 || '%' ORDER BY created_at DESC LIMIT $2;`, urlQuery, SEARCH_LIMIT)
+		rows, err := cmd.bot.DB.Query(`SELECT nick, url FROM links WHERE url ILIKE '%' || $1 || '%' ORDER BY created_at DESC LIMIT $2;`, urlQuery, SEARCH_LIMIT)
 		if err != nil {
-			bot.Log.WithField("err", err).Error("SearchLinks()")
+			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 			return nil, err
 		}
 		defer rows.Close()
@@ -86,7 +93,7 @@ func (bot *Scumbag) SearchLinks(query string) ([]*Link, error) {
 			link := Link{}
 			err := rows.Scan(&link.Nick, &link.Url)
 			if err != nil {
-				bot.Log.WithField("err", err).Error("SearchLinks()")
+				cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 				return nil, err
 			}
 
@@ -95,16 +102,16 @@ func (bot *Scumbag) SearchLinks(query string) ([]*Link, error) {
 
 		err = rows.Err()
 		if err != nil {
-			bot.Log.WithField("err", err).Error("SearchLinks()")
+			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 			return nil, err
 		}
 	} else {
 		// Nick search:  ?url oshuma
-		bot.Log.WithField("nick", query).Debug("SearchLinks(): Nick Search")
+		cmd.bot.Log.WithField("nick", query).Debug("LinkCommand.SearchLinks(): Nick Search")
 
-		rows, err := bot.DB.Query(`SELECT nick, url FROM links WHERE nick = $1 ORDER BY created_at DESC LIMIT $2;`, query, SEARCH_LIMIT)
+		rows, err := cmd.bot.DB.Query(`SELECT nick, url FROM links WHERE nick = $1 ORDER BY created_at DESC LIMIT $2;`, query, SEARCH_LIMIT)
 		if err != nil {
-			bot.Log.WithField("err", err).Error("SearchLinks()")
+			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 			return nil, err
 		}
 		defer rows.Close()
@@ -113,7 +120,7 @@ func (bot *Scumbag) SearchLinks(query string) ([]*Link, error) {
 			link := Link{}
 			err := rows.Scan(&link.Nick, &link.Url)
 			if err != nil {
-				bot.Log.WithField("err", err).Error("SearchLinks()")
+				cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 				return nil, err
 			}
 
@@ -122,7 +129,7 @@ func (bot *Scumbag) SearchLinks(query string) ([]*Link, error) {
 
 		err = rows.Err()
 		if err != nil {
-			bot.Log.WithField("err", err).Error("SearchLinks()")
+			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 			return nil, err
 		}
 	}

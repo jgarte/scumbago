@@ -9,13 +9,18 @@ const (
 	FIGLET = "/usr/bin/figlet"
 )
 
-func (bot *Scumbag) HandleFigletCommand(channel string, phrase string) {
-	if output, err := exec.Command(FIGLET, phrase).Output(); err != nil {
-		bot.Log.WithField("error", err).Error("HandleFigletCommand()")
-		return
+type FigletCommand struct {
+	bot     *Scumbag
+	channel string
+	phrase  string
+}
+
+func (cmd *FigletCommand) Run() {
+	if output, err := exec.Command(FIGLET, cmd.phrase).Output(); err != nil {
+		cmd.bot.Log.WithField("error", err).Error("FigletCommand.Run()")
 	} else {
 		for _, line := range strings.Split(string(output), "\n") {
-			bot.Msg(channel, line)
+			cmd.bot.Msg(cmd.channel, line)
 		}
 	}
 }

@@ -3,8 +3,6 @@ package scumbag
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"sort"
 	"strings"
 )
@@ -40,33 +38,32 @@ func (a ByThumbsUp) Len() int           { return len(a) }
 func (a ByThumbsUp) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByThumbsUp) Less(i, j int) bool { return a[i].ThumbsUp > a[j].ThumbsUp }
 
-func (bot *Scumbag) HandleUrbanDictCommand(channel string, query string) {
+type UrbanDictionaryCommand struct {
+	bot     *Scumbag
+	channel string
+	query   string
+}
+
+func (cmd *UrbanDictionaryCommand) Run() {
 	var requestUrl string
 
-	if query == "-random" {
+	if cmd.query == "" || cmd.query == "-random" {
 		requestUrl = URBAN_DICT_RANDOM_API_URL
 	} else {
-		encodedQuery := strings.Replace(query, " ", "%20", -1)
+		encodedQuery := strings.Replace(cmd.query, " ", "%20", -1)
 		requestUrl = fmt.Sprintf(URBAN_DICT_API_URL, encodedQuery)
 	}
 
-	response, err := http.Get(requestUrl)
+	content, err := getContent(requestUrl)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("HandleUrbanDictCommand()")
-		return
-	}
-
-	content, err := ioutil.ReadAll(response.Body)
-	response.Body.Close()
-	if err != nil {
-		bot.Log.WithField("error", err).Error("HandleUrbanDictCommand()")
+		cmd.bot.Log.WithField("error", err).Error("UrbanDictionaryCommand.Run()")
 		return
 	}
 
 	var result UrbanDictResult
 	err = json.Unmarshal(content, &result)
 	if err != nil {
-		bot.Log.WithField("error", err).Error("HandleUrbanDictCommand()")
+		cmd.bot.Log.WithField("error", err).Error("UrbanDictionaryCommand.Run()")
 		return
 	}
 
@@ -76,13 +73,13 @@ func (bot *Scumbag) HandleUrbanDictCommand(channel string, query string) {
 		definition := result.Definitions[0]
 
 		var message string
-		if query == "-random" {
+		if cmd.query == "-random" {
 			message = fmt.Sprintf("%s: %s", definition.Word, definition.Definition)
 		} else {
 			message = definition.Definition
 		}
 
-		bot.Msg(channel, message)
-		bot.Msg(channel, definition.Permalink)
+		cmd.bot.Msg(cmd.channel, message)
+		cmd.bot.Msg(cmd.channel, definition.Permalink)
 	}
 }
