@@ -70,24 +70,29 @@ type HourlyTemp struct {
 type WeatherCommand struct {
 	bot     *Scumbag
 	channel string
-	query   string
 }
 
-func (cmd *WeatherCommand) Run() {
-	args := strings.Fields(cmd.query)
+func (cmd *WeatherCommand) Run(args ...string) {
+	query := args[0]
+	if query == "" {
+		cmd.bot.Log.Debug("WeatherCommand.Run(): No query")
+		return
+	}
 
-	if len(args) == 1 {
-		cmd.currentConditions(args)
+	cmdArgs := strings.Fields(query)
+
+	if len(cmdArgs) == 1 {
+		cmd.currentConditions(cmdArgs)
 	} else {
-		if len(args) == 0 {
+		if len(cmdArgs) == 0 {
 			return
 		}
 
-		switch args[0] {
+		switch cmdArgs[0] {
 		case "-forecast":
-			cmd.currentForecast(args)
+			cmd.currentForecast(cmdArgs)
 		case "-hourly":
-			cmd.hourlyForecast(args)
+			cmd.hourlyForecast(cmdArgs)
 		default:
 			cmd.bot.Msg(cmd.channel, "?weather <location/zip>")
 			cmd.bot.Msg(cmd.channel, "?weather -forecast <location/zip>")
@@ -95,29 +100,6 @@ func (cmd *WeatherCommand) Run() {
 		}
 	}
 }
-
-// func (bot *Scumbag) HandleWeatherCommand(channel string, query string) {
-//   args := strings.Fields(query)
-
-//   if len(args) == 1 {
-//     currentConditions(bot, channel, args)
-//   } else {
-//     if len(args) == 0 {
-//       return
-//     }
-
-//     switch args[0] {
-//     case "-forecast":
-//       currentForecast(bot, channel, args)
-//     case "-hourly":
-//       hourlyForecast(bot, channel, args)
-//     default:
-//       bot.Msg(channel, "?weather <location/zip>")
-//       bot.Msg(channel, "?weather -forecast <location/zip>")
-//       bot.Msg(channel, "?weather -hourly <location/zip>")
-//     }
-//   }
-// }
 
 func (cmd *WeatherCommand) currentConditions(args []string) {
 	apiKey := cmd.bot.Config.WeatherUnderground.Key

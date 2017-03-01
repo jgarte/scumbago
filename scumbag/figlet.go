@@ -12,11 +12,21 @@ const (
 type FigletCommand struct {
 	bot     *Scumbag
 	channel string
-	phrase  string
 }
 
-func (cmd *FigletCommand) Run() {
-	if output, err := exec.Command(FIGLET, cmd.phrase).Output(); err != nil {
+func (cmd *FigletCommand) Run(args ...string) {
+	if len(args) <= 0 {
+		cmd.bot.Log.WithField("args", args).Debug("FigletCommand.Run(): No args")
+		return
+	}
+
+	phrase := args[0]
+	if phrase == "" {
+		cmd.bot.Log.Debug("FigletCommand.Run(): No phrase")
+		return
+	}
+
+	if output, err := exec.Command(FIGLET, phrase).Output(); err != nil {
 		cmd.bot.Log.WithField("error", err).Error("FigletCommand.Run()")
 	} else {
 		for _, line := range strings.Split(string(output), "\n") {

@@ -54,24 +54,34 @@ type GithubCommitStats struct {
 }
 
 type GithubCommand struct {
-	bot      *Scumbag
-	channel  string
-	username string
+	bot     *Scumbag
+	channel string
 }
 
-func (cmd *GithubCommand) Run() {
-	requestUrl := fmt.Sprintf(GITHUB_USER_EVENTS_URL, cmd.username)
+func (cmd *GithubCommand) Run(args ...string) {
+	if len(args) <= 0 {
+		cmd.bot.Log.WithField("args", args).Debug("GithubCommand.Run(): No args")
+		return
+	}
+
+	username := args[0]
+	if username == "" {
+		cmd.bot.Log.Debug("GithubCommand.Run(): No username")
+		return
+	}
+
+	requestUrl := fmt.Sprintf(GITHUB_USER_EVENTS_URL, username)
 
 	content, err := getContent(requestUrl)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("HandleGithubCommand()")
+		cmd.bot.Log.WithField("error", err).Error("GithubCommand.Run()")
 		return
 	}
 
 	events := make([]GithubEvent, 0)
 	err = json.Unmarshal(content, &events)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("HandleGithubCommand()")
+		cmd.bot.Log.WithField("error", err).Error("GithubCommand.Run()")
 		return
 	}
 
@@ -86,7 +96,7 @@ func (cmd *GithubCommand) Run() {
 		case "PullRequestEvent":
 			cmd.pullRequestEvent(event)
 		default:
-			cmd.bot.Log.WithField("event", event).Warn("HandleGithubCommand(): Unhandled event")
+			cmd.bot.Log.WithField("event", event).Warn("GithubCommand.Run(): Unhandled event")
 		}
 	}
 }
@@ -97,14 +107,14 @@ func (cmd *GithubCommand) pushEvent(event GithubEvent) {
 
 		content, err := getContent(eventCommit.Url)
 		if err != nil {
-			cmd.bot.Log.WithField("error", err).Error("HandleGithubCommand()")
+			cmd.bot.Log.WithField("error", err).Error("GithubCommand.pushEvent()")
 			return
 		}
 
 		var commit GithubCommit
 		err = json.Unmarshal(content, &commit)
 		if err != nil {
-			cmd.bot.Log.WithField("error", err).Error("HandleGithubCommand()")
+			cmd.bot.Log.WithField("error", err).Error("GithubCommand.pushEvent()")
 			return
 		}
 

@@ -17,26 +17,30 @@ var (
 type RedditCommand struct {
 	bot     *Scumbag
 	channel string
-	query   string
 }
 
-func (cmd *RedditCommand) Run() {
-	args := strings.Fields(cmd.query)
+func (cmd *RedditCommand) Run(args ...string) {
+	if len(args) <= 0 {
+		cmd.bot.Log.WithField("args", args).Debug("RedditCommand.Run(): No args")
+		return
+	}
 
-	if len(args) == 1 {
-		cmd.randomSubredditSubmission(cmd.query)
+	cmdArgs := strings.Fields(args[0])
+
+	if len(cmdArgs) == 1 {
+		cmd.randomSubredditSubmission(cmdArgs[0])
 	} else {
-		if len(args) == 0 {
+		if len(cmdArgs) == 0 {
 			return
 		}
 
-		switch args[0] {
+		switch cmdArgs[0] {
 		case "-t":
-			cmd.subredditSubmission(args[1])
+			cmd.subredditSubmission(cmdArgs[1])
 		case "-top":
-			cmd.subredditSubmission(args[1])
+			cmd.subredditSubmission(cmdArgs[1])
 		default:
-			cmd.randomSubredditSubmission(cmd.query)
+			cmd.randomSubredditSubmission(cmdArgs[0])
 		}
 	}
 }

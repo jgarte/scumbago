@@ -41,16 +41,17 @@ func (a ByThumbsUp) Less(i, j int) bool { return a[i].ThumbsUp > a[j].ThumbsUp }
 type UrbanDictionaryCommand struct {
 	bot     *Scumbag
 	channel string
-	query   string
 }
 
-func (cmd *UrbanDictionaryCommand) Run() {
+func (cmd *UrbanDictionaryCommand) Run(args ...string) {
 	var requestUrl string
 
-	if cmd.query == "" || cmd.query == "-random" {
+	query := args[0]
+
+	if query == "" || query == "-random" {
 		requestUrl = URBAN_DICT_RANDOM_API_URL
 	} else {
-		encodedQuery := strings.Replace(cmd.query, " ", "%20", -1)
+		encodedQuery := strings.Replace(query, " ", "%20", -1)
 		requestUrl = fmt.Sprintf(URBAN_DICT_API_URL, encodedQuery)
 	}
 
@@ -73,7 +74,7 @@ func (cmd *UrbanDictionaryCommand) Run() {
 		definition := result.Definitions[0]
 
 		var message string
-		if cmd.query == "-random" {
+		if query == "-random" {
 			message = fmt.Sprintf("%s: %s", definition.Word, definition.Definition)
 		} else {
 			message = definition.Definition

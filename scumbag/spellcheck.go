@@ -21,12 +21,22 @@ var (
 type SpellcheckCommand struct {
 	bot     *Scumbag
 	channel string
-	word    string
 }
 
 // Handler for "?sp <word>"
-func (cmd *SpellcheckCommand) Run() {
-	response, err := cmd.Spellcheck(cmd.word)
+func (cmd *SpellcheckCommand) Run(args ...string) {
+	if len(args) <= 0 {
+		cmd.bot.Log.WithField("args", args).Debug("SpellcheckCommand.Run(): No args")
+		return
+	}
+
+	word := args[0]
+	if word == "" {
+		cmd.bot.Log.Debug("SpellcheckCommand.Run(): No word")
+		return
+	}
+
+	response, err := cmd.Spellcheck(word)
 	if err != nil {
 		cmd.bot.Log.WithField("error", err).Error("SpellcheckCommand.Run()")
 		return

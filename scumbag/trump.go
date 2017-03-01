@@ -19,7 +19,7 @@ type TrumpCommand struct {
 	channel string
 }
 
-func (cmd *TrumpCommand) Run() {
+func (cmd *TrumpCommand) Run(args ...string) {
 	response, err := http.Get(WTF_TRUMP_URL)
 	if err != nil {
 		cmd.bot.Log.WithField("error", err).Error("TrumpCommand.Run()")

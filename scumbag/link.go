@@ -28,12 +28,17 @@ type Link struct {
 type LinkCommand struct {
 	bot     *Scumbag
 	channel string
-	query   string
 }
 
 // Handler for "?url <nick_or_regex>"
-func (cmd *LinkCommand) Run() {
-	links, err := cmd.SearchLinks(cmd.query)
+func (cmd *LinkCommand) Run(args ...string) {
+	query := args[0]
+	if query == "" {
+		cmd.bot.Log.Debug("LinkCommand.Run(): No query")
+		return
+	}
+
+	links, err := cmd.SearchLinks(query)
 	if err != nil {
 		cmd.bot.Log.WithField("error", err).Error("LinkCommand.Run()")
 		return

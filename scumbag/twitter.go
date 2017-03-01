@@ -10,29 +10,37 @@ import (
 type TwitterCommand struct {
 	bot     *Scumbag
 	channel string
-	query   string
 }
 
-func (cmd *TwitterCommand) Run() {
-	cmd.bot.Log.WithField("query", cmd.query).Debug("TwitterCommand.Run()")
+func (cmd *TwitterCommand) Run(args ...string) {
+	if len(args) <= 0 {
+		cmd.bot.Log.WithField("args", args).Debug("TwitterCommand.Run(): No args")
+		return
+	}
+
+	query := args[0]
+	if query == "" {
+		cmd.bot.Log.Debug("TwitterCommand.Run(): No query")
+		return
+	}
 
 	switch {
-	case strings.HasPrefix(cmd.query, "@"):
-		user, protected := cmd.screennameStatus()
+	case strings.HasPrefix(query, "@"):
+		user, protected := cmd.screennameStatus(query)
 
 		var msg string
 		if protected {
-			msg = fmt.Sprintf("Account is not public: %s", cmd.query)
+			msg = fmt.Sprintf("Account is not public: %s", query)
 		} else {
 			if user.ScreenName != "" && user.Status != nil {
 				msg = fmt.Sprintf("@%s %s", user.ScreenName, user.Status.Text)
 			} else {
-				msg = fmt.Sprintf("Account has no tweets: %s", cmd.query)
+				msg = fmt.Sprintf("Account has no tweets: %s", query)
 			}
 		}
 		cmd.bot.Msg(cmd.channel, msg)
 	default:
-		status := cmd.searchTwitter()
+		status := cmd.searchTwitter(query)
 		if status != nil {
 			msg := fmt.Sprintf("@%s %s", status.User.ScreenName, status.Text)
 			cmd.bot.Msg(cmd.channel, msg)
@@ -40,36 +48,9 @@ func (cmd *TwitterCommand) Run() {
 	}
 }
 
-// func (bot *Scumbag) HandleTwitterCommand(channel string, query string) {
-//   bot.Log.WithField("query", query).Debug("HandleTwitterCommand()")
-
-//   switch {
-//   case strings.HasPrefix(query, "@"):
-//     user, protected := bot.screennameStatus(query)
-
-//     var msg string
-//     if protected {
-//       msg = fmt.Sprintf("Account is not public: %s", query)
-//     } else {
-//       if user.ScreenName != "" && user.Status != nil {
-//         msg = fmt.Sprintf("@%s %s", user.ScreenName, user.Status.Text)
-//       } else {
-//         msg = fmt.Sprintf("Account has no tweets: %s", query)
-//       }
-//     }
-//     bot.Msg(channel, msg)
-//   default:
-//     status := bot.searchTwitter(query)
-//     if status != nil {
-//       msg := fmt.Sprintf("@%s %s", status.User.ScreenName, status.Text)
-//       bot.Msg(channel, msg)
-//     }
-//   }
-// }
-
-func (cmd *TwitterCommand) screennameStatus() (*twitter.User, bool) {
+func (cmd *TwitterCommand) screennameStatus(query string) (*twitter.User, bool) {
 	user, _, err := cmd.bot.Twitter.Users.Show(&twitter.UserShowParams{
-		ScreenName:      strings.Replace(cmd.query, "@", "", 1),
+		ScreenName:      strings.Replace(query, "@", "", 1),
 		IncludeEntities: twitter.Bool(true),
 	})
 	if err != nil {
@@ -86,9 +67,9 @@ func (cmd *TwitterCommand) screennameStatus() (*twitter.User, bool) {
 	}
 }
 
-func (cmd *TwitterCommand) searchTwitter() *twitter.Tweet {
+func (cmd *TwitterCommand) searchTwitter(query string) *twitter.Tweet {
 	search, _, err := cmd.bot.Twitter.Search.Tweets(&twitter.SearchTweetParams{
-		Query: cmd.query,
+		Query: query,
 	})
 	if err != nil {
 		cmd.bot.Log.WithField("error", err).Error("TwitterCommand.searchTwitter()")

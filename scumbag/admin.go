@@ -13,17 +13,21 @@ const (
 type AdminCommand struct {
 	bot     *Scumbag
 	channel string
-	args    string
 	line    *irc.Line
 }
 
-func (cmd *AdminCommand) Run() {
+func (cmd *AdminCommand) Run(args ...string) {
 	if !cmd.bot.Admin(cmd.line.Nick) {
 		cmd.bot.Msg(cmd.channel, "Fuck off.")
 		return
 	}
 
-	fields := strings.Fields(cmd.args)
+	if len(args) <= 0 {
+		cmd.bot.Log.WithField("args", args).Debug("AdminCommand.Run(): No args")
+		return
+	}
+
+	fields := strings.Fields(args[0])
 
 	if len(fields) > 1 {
 		command := fields[0]
@@ -34,6 +38,6 @@ func (cmd *AdminCommand) Run() {
 			cmd.bot.ircClient.Nick(commandArgs)
 		}
 	} else {
-		cmd.bot.Log.WithField("args", cmd.args).Error("AdminCommand.Run(): Could not get command args")
+		cmd.bot.Log.WithField("args", args).Error("AdminCommand.Run(): Could not get command args")
 	}
 }
