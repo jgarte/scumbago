@@ -54,7 +54,7 @@ func LoadConfig(configFile *string) (*BotConfig, error) {
 	return &botConfig, nil
 }
 
-func (config *BotConfig) ForServer(server string) (*ServerConfig, error) {
+func (config *BotConfig) Server(server string) (*ServerConfig, error) {
 	for _, serverConfig := range config.Servers {
 		if serverConfig.Server == server {
 			return serverConfig, nil

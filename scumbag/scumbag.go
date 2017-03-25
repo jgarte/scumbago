@@ -220,7 +220,7 @@ func (bot *Scumbag) setupHandlers() {
 	for server, client := range bot.ircClients {
 		bot.Log.WithField("server", server).Debug("setupHandlers()")
 
-		serverConfig, err := bot.Config.ForServer(server)
+		serverConfig, err := bot.Config.Server(server)
 		if err != nil {
 			bot.Log.WithField("err", err).Error("setupHandlers()")
 			continue
