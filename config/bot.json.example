@@ -1,7 +1,15 @@
 {
-  "Name":    "scumbag_bot",
-  "Server":  "irc.example.com:6667",
-  "Channel": "#scumbag",
+  "Servers": [
+    {
+      "Name":    "scumbag_bot",
+      "Server":  "irc.example.com:6667",
+      "Channels": ["#scumbag", "#scumbag_two"]
+    },
+
+    {
+      # Another (optional) server config.
+    }
+  ],
 
   "Admins": [ "admin_nick", "another_admin" ],
 

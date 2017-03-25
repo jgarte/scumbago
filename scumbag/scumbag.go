@@ -54,12 +54,16 @@ type Scumbag struct {
 	Reddit  *geddit.Session
 	Twitter *twitter.Client
 
-	ircClient    *irc.Conn
+	ircClients   map[string]*irc.Conn
 	disconnected chan struct{}
 }
 
 func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
-	botConfig := LoadConfig(configFile)
+	botConfig, err := LoadConfig(configFile)
+	if err != nil {
+		return nil, err
+	}
+
 	bot := &Scumbag{
 		Config:       botConfig,
 		disconnected: make(chan struct{}),
@@ -75,7 +79,7 @@ func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
 
 	bot.setupRedditSession()
 	bot.setupTwitterClient()
-	bot.setupIrcClient()
+	bot.setupIrcClients()
 	bot.setupHandlers()
 
 	return bot, nil
@@ -84,21 +88,31 @@ func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
 func (bot *Scumbag) Start() error {
 	bot.Log.Info("Starting.")
 
-	if err := bot.ircClient.Connect(); err != nil {
-		bot.Log.WithField("error", err).Error("IRC Connection Error")
-		return err
+	for _, client := range bot.ircClients {
+		if err := client.Connect(); err != nil {
+			bot.Log.WithFields(log.Fields{"err": err, "client": client}).Error("IRC Connection Error")
+			return err
+		}
 	}
 
 	return nil
 }
 
 func (bot *Scumbag) Wait() {
+	bot.Log.Debug("Waiting...")
 	<-bot.disconnected
 }
 
 func (bot *Scumbag) Shutdown() {
 	bot.Log.Info("Shutting down.")
-	bot.ircClient.Quit("Fuck you. Fuck you. You're cool. I'm out.")
+
+	for server, client := range bot.ircClients {
+		bot.Log.WithField("server", server).Debug("Shutdown(): Quitting")
+		client.Quit("Fuck you. Fuck you. You're cool. I'm out.")
+	}
+
+	bot.DB.Close()
+	close(bot.disconnected)
 }
 
 func (bot *Scumbag) Admin(nick string) bool {
@@ -113,7 +127,8 @@ func (bot *Scumbag) Admin(nick string) bool {
 
 // Sends a PRIVMSG to `channel_or_nick`.
 func (bot *Scumbag) Msg(channel_or_nick string, message string) {
-	bot.ircClient.Privmsg(channel_or_nick, message)
+	// TODO: Update this to handle server.
+	// bot.ircClient.Privmsg(channel_or_nick, message)
 }
 
 func (bot *Scumbag) setupLogger(logFilename *string) error {
@@ -148,6 +163,8 @@ func (bot *Scumbag) setupLogger(logFilename *string) error {
 }
 
 func (bot *Scumbag) setupDatabase() error {
+	bot.Log.Debug("setupDatabase()")
+
 	databaseParams := fmt.Sprintf("dbname=%s user=%s password=%s", bot.Config.Database.Name, bot.Config.Database.User, bot.Config.Database.Password)
 	session, err := sql.Open("postgres", databaseParams)
 	if err != nil {
@@ -160,10 +177,14 @@ func (bot *Scumbag) setupDatabase() error {
 }
 
 func (bot *Scumbag) setupRedditSession() {
+	bot.Log.Debug("setupRedditSession()")
+
 	bot.Reddit = geddit.NewSession(REDDIT_USER_AGENT)
 }
 
 func (bot *Scumbag) setupTwitterClient() {
+	bot.Log.Debug("setupTwitterClient()")
+
 	oauthConfig := &oauth2.Config{}
 	oauthToken := &oauth2.Token{AccessToken: bot.Config.Twitter.AccessToken}
 	httpClient := oauthConfig.Client(oauth2.NoContext, oauthToken)
@@ -171,43 +192,64 @@ func (bot *Scumbag) setupTwitterClient() {
 	bot.Twitter = twitter.NewClient(httpClient)
 }
 
-func (bot *Scumbag) setupIrcClient() {
-	clientConfig := irc.NewConfig(bot.Config.Name)
-	clientConfig.Server = bot.Config.Server
+func (bot *Scumbag) setupIrcClients() {
+	bot.Log.Debug("setupIrcClients()")
 
-	// Setup SSL and skip cert verify.
-	clientConfig.SSL = true
-	clientConfig.SSLConfig = new(tls.Config)
-	clientConfig.SSLConfig.InsecureSkipVerify = true
+	bot.ircClients = make(map[string]*irc.Conn)
 
-	clientConfig.NewNick = func(n string) string { return n + "_" }
+	for _, serverConfig := range bot.Config.Servers {
+		clientConfig := irc.NewConfig(serverConfig.Name)
+		clientConfig.Server = serverConfig.Server
 
-	bot.ircClient = irc.Client(clientConfig)
+		// Setup SSL and skip cert verify.
+		if serverConfig.SSL {
+			clientConfig.SSL = true
+			clientConfig.SSLConfig = new(tls.Config)
+			clientConfig.SSLConfig.InsecureSkipVerify = true
+		}
+
+		clientConfig.NewNick = func(n string) string { return n + "_" }
+
+		bot.ircClients[serverConfig.Server] = irc.Client(clientConfig)
+	}
 }
 
 func (bot *Scumbag) setupHandlers() {
-	bot.ircClient.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
-		bot.Log.WithField("server", bot.Config.Server).Info("Connected to server.")
-		conn.Join(bot.Config.Channel)
-		bot.Log.WithField("channel", bot.Config.Channel).Info("Joined channel.")
-	})
+	bot.Log.Debug("setupHandlers()")
 
-	bot.ircClient.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
-		bot.Log.Info("Disconnected.")
-		bot.Log.Debug("Closing database connection.")
-		bot.DB.Close()
-		close(bot.disconnected)
-	})
+	for server, client := range bot.ircClients {
+		bot.Log.WithField("server", server).Debug("setupHandlers()")
 
-	bot.ircClient.HandleFunc("PRIVMSG", bot.msgHandler)
+		serverConfig, err := bot.Config.ForServer(server)
+		if err != nil {
+			bot.Log.WithField("err", err).Error("setupHandlers()")
+			continue
+		}
+		bot.Log.WithField("serverConfig", serverConfig).Debug("setupHandlers()")
+
+		client.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
+			bot.Log.WithField("server", conn.Config().Server).Info("Connected to server.")
+			for _, channel := range serverConfig.Channels {
+				conn.Join(channel)
+			}
+		})
+
+		client.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
+			bot.Log.WithField("server", server).Info("Disconnected.")
+		})
+
+		client.HandleFunc("PRIVMSG", bot.msgHandler)
+	}
 }
 
 // Handles normal PRIVMSG lines received from the server.
+// TODO: Update this to handle multiple server/channels.
 func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 	bot.Log.WithFields(log.Fields{
-		"time": line.Time,
-		"nick": line.Nick,
-		"args": line.Args,
+		"conn.Config().Server": conn.Config().Server,
+		"line.Time":            line.Time,
+		"line.Nick":            line.Nick,
+		"line.Args":            line.Args,
 	}).Debug("Channel message.")
 
 	// These functions check the line text and act accordingly.
