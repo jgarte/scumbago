@@ -55,7 +55,7 @@ type Scumbag struct {
 	Twitter *twitter.Client
 
 	ircClients   map[string]*irc.Conn
-	disconnected chan struct{}
+	disconnected map[string]chan struct{}
 }
 
 func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
@@ -66,7 +66,7 @@ func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
 
 	bot := &Scumbag{
 		Config:       botConfig,
-		disconnected: make(chan struct{}),
+		disconnected: make(map[string]chan struct{}),
 	}
 
 	if err := bot.setupLogger(logFilename); err != nil {
@@ -100,19 +100,20 @@ func (bot *Scumbag) Start() error {
 
 func (bot *Scumbag) Wait() {
 	bot.Log.Debug("Waiting...")
-	<-bot.disconnected
+	for _, ch := range bot.disconnected {
+		<-ch
+	}
 }
 
 func (bot *Scumbag) Shutdown() {
 	bot.Log.Info("Shutting down.")
 
 	for server, client := range bot.ircClients {
-		bot.Log.WithField("server", server).Debug("Shutdown(): Quitting")
+		bot.Log.WithField("server", server).Debug("Shutdown()")
 		client.Quit("Fuck you. Fuck you. You're cool. I'm out.")
 	}
 
 	bot.DB.Close()
-	close(bot.disconnected)
 }
 
 func (bot *Scumbag) Admin(nick string) bool {
@@ -211,6 +212,7 @@ func (bot *Scumbag) setupIrcClients() {
 		clientConfig.NewNick = func(n string) string { return n + "_" }
 
 		bot.ircClients[serverConfig.Server] = irc.Client(clientConfig)
+		bot.disconnected[serverConfig.Server] = make(chan struct{})
 	}
 }
 
@@ -235,7 +237,8 @@ func (bot *Scumbag) setupHandlers() {
 		})
 
 		client.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
-			bot.Log.WithField("server", server).Info("Disconnected.")
+			bot.Log.WithField("server", conn.Config().Server).Info("Disconnected.")
+			close(bot.disconnected[conn.Config().Server])
 		})
 
 		client.HandleFunc("PRIVMSG", bot.msgHandler)
