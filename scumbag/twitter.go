@@ -5,11 +5,13 @@ import (
 	"strings"
 
 	"github.com/dghubble/go-twitter/twitter"
+	irc "github.com/fluffle/goirc/client"
 )
 
 type TwitterCommand struct {
 	bot     *Scumbag
 	channel string
+	conn    *irc.Conn
 }
 
 func (cmd *TwitterCommand) Run(args ...string) {
@@ -38,12 +40,12 @@ func (cmd *TwitterCommand) Run(args ...string) {
 				msg = fmt.Sprintf("Account has no tweets: %s", query)
 			}
 		}
-		cmd.bot.Msg(cmd.channel, msg)
+		cmd.bot.Msg(cmd.conn, cmd.channel, msg)
 	default:
 		status := cmd.searchTwitter(query)
 		if status != nil {
 			msg := fmt.Sprintf("@%s %s", status.User.ScreenName, status.Text)
-			cmd.bot.Msg(cmd.channel, msg)
+			cmd.bot.Msg(cmd.conn, cmd.channel, msg)
 		}
 	}
 }

@@ -28,6 +28,7 @@ type Link struct {
 type LinkCommand struct {
 	bot     *Scumbag
 	channel string
+	conn    *irc.Conn
 }
 
 // Handler for "?url <nick_or_regex>"
@@ -49,7 +50,7 @@ func (cmd *LinkCommand) Run(args ...string) {
 		response[i] = link.Url
 	}
 
-	cmd.bot.Msg(cmd.channel, strings.Join(response, URL_SEP))
+	cmd.bot.Msg(cmd.conn, cmd.channel, strings.Join(response, URL_SEP))
 }
 
 // Called from a goroutine to save links from `line`.

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	irc "github.com/fluffle/goirc/client"
 	"github.com/jzelinskie/geddit"
 )
 
@@ -17,6 +18,7 @@ var (
 type RedditCommand struct {
 	bot     *Scumbag
 	channel string
+	conn    *irc.Conn
 }
 
 func (cmd *RedditCommand) Run(args ...string) {
@@ -101,5 +103,5 @@ func (cmd *RedditCommand) randomSubredditSubmission(subreddit string) {
 func (cmd *RedditCommand) msg(submission *geddit.Submission) {
 	// This is needed because the URL returned has HTML escaped params for some dumbass reason.
 	url := strings.Replace(submission.URL, "&amp;", "&", -1)
-	cmd.bot.Msg(cmd.channel, url)
+	cmd.bot.Msg(cmd.conn, cmd.channel, url)
 }

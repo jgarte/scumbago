@@ -21,6 +21,7 @@ var (
 type SpellcheckCommand struct {
 	bot     *Scumbag
 	channel string
+	conn    *irc.Conn
 }
 
 // Handler for "?sp <word>"
@@ -42,18 +43,18 @@ func (cmd *SpellcheckCommand) Run(args ...string) {
 		return
 	}
 
-	cmd.bot.Msg(cmd.channel, response)
+	cmd.bot.Msg(cmd.conn, cmd.channel, response)
 }
 
 // Called from a goroutine to search for text like "some word (sp?) to spellcheck"
-func (bot *Scumbag) SpellcheckLine(line *irc.Line) {
+func (bot *Scumbag) SpellcheckLine(conn *irc.Conn, line *irc.Line) {
 	if len(line.Args) <= 0 {
 		return
 	}
 
 	channel := line.Args[0]
 
-	cmd := &SpellcheckCommand{bot: bot, channel: channel}
+	cmd := &SpellcheckCommand{bot: bot, channel: channel, conn: conn}
 	if word, ok := cmd.getWordFromLine(line); ok == true {
 		response, err := cmd.Spellcheck(word)
 		if err != nil {
@@ -61,7 +62,7 @@ func (bot *Scumbag) SpellcheckLine(line *irc.Line) {
 			return
 		}
 
-		cmd.bot.Msg(cmd.channel, response)
+		cmd.bot.Msg(cmd.conn, cmd.channel, response)
 	}
 }
 

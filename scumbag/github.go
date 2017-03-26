@@ -3,6 +3,8 @@ package scumbag
 import (
 	"encoding/json"
 	"fmt"
+
+	irc "github.com/fluffle/goirc/client"
 )
 
 const (
@@ -56,6 +58,7 @@ type GithubCommitStats struct {
 type GithubCommand struct {
 	bot     *Scumbag
 	channel string
+	conn    *irc.Conn
 }
 
 func (cmd *GithubCommand) Run(args ...string) {
@@ -120,19 +123,19 @@ func (cmd *GithubCommand) pushEvent(event GithubEvent) {
 
 		eventMsg := fmt.Sprintf("%s: %s", event.Repo.Name, eventCommit.Message)
 
-		cmd.bot.Msg(cmd.channel, eventMsg)
-		cmd.bot.Msg(cmd.channel, commit.HtmlUrl)
+		cmd.bot.Msg(cmd.conn, cmd.channel, eventMsg)
+		cmd.bot.Msg(cmd.conn, cmd.channel, commit.HtmlUrl)
 	}
 }
 
 func (cmd *GithubCommand) issueCommentEvent(event GithubEvent) {
 	eventMsg := fmt.Sprintf("%s: %s", event.Repo.Name, event.Payload.Comment.Body)
-	cmd.bot.Msg(cmd.channel, eventMsg)
-	cmd.bot.Msg(cmd.channel, event.Payload.Comment.HtmlUrl)
+	cmd.bot.Msg(cmd.conn, cmd.channel, eventMsg)
+	cmd.bot.Msg(cmd.conn, cmd.channel, event.Payload.Comment.HtmlUrl)
 }
 
 func (cmd *GithubCommand) pullRequestEvent(event GithubEvent) {
 	eventMsg := fmt.Sprintf("%s: PR: %s", event.Repo.Name, event.Payload.PullRequest.Title)
-	cmd.bot.Msg(cmd.channel, eventMsg)
-	cmd.bot.Msg(cmd.channel, event.Payload.PullRequest.HtmlUrl)
+	cmd.bot.Msg(cmd.conn, cmd.channel, eventMsg)
+	cmd.bot.Msg(cmd.conn, cmd.channel, event.Payload.PullRequest.HtmlUrl)
 }

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	irc "github.com/fluffle/goirc/client"
 )
 
 const (
@@ -70,6 +72,7 @@ type HourlyTemp struct {
 type WeatherCommand struct {
 	bot     *Scumbag
 	channel string
+	conn    *irc.Conn
 }
 
 func (cmd *WeatherCommand) Run(args ...string) {
@@ -94,9 +97,9 @@ func (cmd *WeatherCommand) Run(args ...string) {
 		case "-hourly":
 			cmd.hourlyForecast(cmdArgs)
 		default:
-			cmd.bot.Msg(cmd.channel, "?weather <location/zip>")
-			cmd.bot.Msg(cmd.channel, "?weather -forecast <location/zip>")
-			cmd.bot.Msg(cmd.channel, "?weather -hourly <location/zip>")
+			cmd.bot.Msg(cmd.conn, cmd.channel, "?weather <location/zip>")
+			cmd.bot.Msg(cmd.conn, cmd.channel, "?weather -forecast <location/zip>")
+			cmd.bot.Msg(cmd.conn, cmd.channel, "?weather -hourly <location/zip>")
 		}
 	}
 }
@@ -121,9 +124,9 @@ func (cmd *WeatherCommand) currentConditions(args []string) {
 
 	if result.Observation.Temperature != "" {
 		msg := fmt.Sprintf("%s / %s humidity", result.Observation.Temperature, result.Observation.Humidity)
-		cmd.bot.Msg(cmd.channel, msg)
+		cmd.bot.Msg(cmd.conn, cmd.channel, msg)
 	} else {
-		cmd.bot.Msg(cmd.channel, "WTF zip code is that?")
+		cmd.bot.Msg(cmd.conn, cmd.channel, "WTF zip code is that?")
 	}
 }
 
@@ -151,7 +154,7 @@ func (cmd *WeatherCommand) currentForecast(args []string) {
 	}
 
 	msg := strings.Join(forecast, "  ")
-	cmd.bot.Msg(cmd.channel, msg)
+	cmd.bot.Msg(cmd.conn, cmd.channel, msg)
 }
 
 func (cmd *WeatherCommand) hourlyForecast(args []string) {
@@ -181,5 +184,5 @@ func (cmd *WeatherCommand) hourlyForecast(args []string) {
 	forecast = forecast[:3]
 
 	msg := strings.Join(forecast, "  ")
-	cmd.bot.Msg(cmd.channel, msg)
+	cmd.bot.Msg(cmd.conn, cmd.channel, msg)
 }

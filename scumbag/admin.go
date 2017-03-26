@@ -13,12 +13,13 @@ const (
 type AdminCommand struct {
 	bot     *Scumbag
 	channel string
+	conn    *irc.Conn
 	line    *irc.Line
 }
 
 func (cmd *AdminCommand) Run(args ...string) {
 	if !cmd.bot.Admin(cmd.line.Nick) {
-		cmd.bot.Msg(cmd.channel, "Fuck off.")
+		cmd.bot.Msg(cmd.conn, cmd.channel, "Fuck off.")
 		return
 	}
 

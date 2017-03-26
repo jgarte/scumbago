@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	irc "github.com/fluffle/goirc/client"
 )
 
 const (
@@ -41,6 +43,7 @@ func (a ByThumbsUp) Less(i, j int) bool { return a[i].ThumbsUp > a[j].ThumbsUp }
 type UrbanDictionaryCommand struct {
 	bot     *Scumbag
 	channel string
+	conn    *irc.Conn
 }
 
 func (cmd *UrbanDictionaryCommand) Run(args ...string) {
@@ -80,7 +83,7 @@ func (cmd *UrbanDictionaryCommand) Run(args ...string) {
 			message = definition.Definition
 		}
 
-		cmd.bot.Msg(cmd.channel, message)
-		cmd.bot.Msg(cmd.channel, definition.Permalink)
+		cmd.bot.Msg(cmd.conn, cmd.channel, message)
+		cmd.bot.Msg(cmd.conn, cmd.channel, definition.Permalink)
 	}
 }

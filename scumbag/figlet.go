@@ -3,6 +3,8 @@ package scumbag
 import (
 	"os/exec"
 	"strings"
+
+	irc "github.com/fluffle/goirc/client"
 )
 
 const (
@@ -12,6 +14,7 @@ const (
 type FigletCommand struct {
 	bot     *Scumbag
 	channel string
+	conn    *irc.Conn
 }
 
 func (cmd *FigletCommand) Run(args ...string) {
@@ -30,7 +33,7 @@ func (cmd *FigletCommand) Run(args ...string) {
 		cmd.bot.Log.WithField("error", err).Error("FigletCommand.Run()")
 	} else {
 		for _, line := range strings.Split(string(output), "\n") {
-			cmd.bot.Msg(cmd.channel, line)
+			cmd.bot.Msg(cmd.conn, cmd.channel, line)
 		}
 	}
 }

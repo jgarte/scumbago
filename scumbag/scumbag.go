@@ -126,10 +126,9 @@ func (bot *Scumbag) Admin(nick string) bool {
 	return false
 }
 
-// Sends a PRIVMSG to `channel_or_nick`.
-func (bot *Scumbag) Msg(channel_or_nick string, message string) {
-	// TODO: Update this to handle server.
-	// bot.ircClient.Privmsg(channel_or_nick, message)
+// Sends a PRIVMSG to `channel_or_nick` on `conn.Config().Server`'s client.
+func (bot *Scumbag) Msg(conn *irc.Conn, channel_or_nick string, message string) {
+	bot.ircClients[conn.Config().Server].Privmsg(channel_or_nick, message)
 }
 
 func (bot *Scumbag) setupLogger(logFilename *string) error {
@@ -246,7 +245,6 @@ func (bot *Scumbag) setupHandlers() {
 }
 
 // Handles normal PRIVMSG lines received from the server.
-// TODO: Update this to handle multiple server/channels.
 func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 	bot.Log.WithFields(log.Fields{
 		"conn.Config().Server": conn.Config().Server,
@@ -260,10 +258,10 @@ func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 	go bot.SpellcheckLine(line)
 
 	// This function handles explicit bot commands ("?url", "?sp", etc)
-	go bot.processCommands(line)
+	go bot.processCommands(conn, line)
 }
 
-func (bot *Scumbag) processCommands(line *irc.Line) {
+func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 	if len(line.Args) <= 0 {
 		bot.Log.WithField("line", line).Debug("processCommands(): Line has no args")
 		return
@@ -283,27 +281,27 @@ func (bot *Scumbag) processCommands(line *irc.Line) {
 	var command Command
 	switch commandName {
 	case CMD_ADMIN:
-		command = &AdminCommand{bot: bot, channel: channel, line: line}
+		command = &AdminCommand{bot: bot, channel: channel, conn: conn, line: line}
 	case CMD_FIGLET:
-		command = &FigletCommand{bot: bot, channel: channel}
+		command = &FigletCommand{bot: bot, channel: channel, conn: conn}
 	case CMD_GITHUB:
-		command = &GithubCommand{bot: bot, channel: channel}
+		command = &GithubCommand{bot: bot, channel: channel, conn: conn}
 	case CMD_REDDIT:
-		command = &RedditCommand{bot: bot, channel: channel}
+		command = &RedditCommand{bot: bot, channel: channel, conn: conn}
 	case CMD_SPELL:
-		command = &SpellcheckCommand{bot: bot, channel: channel}
+		command = &SpellcheckCommand{bot: bot, channel: channel, conn: conn}
 	case CMD_TRUMP:
-		command = &TrumpCommand{bot: bot, channel: channel}
+		command = &TrumpCommand{bot: bot, channel: channel, conn: conn}
 	case CMD_TWITTER:
-		command = &TwitterCommand{bot: bot, channel: channel}
+		command = &TwitterCommand{bot: bot, channel: channel, conn: conn}
 	case CMD_URBAN_DICT:
-		command = &UrbanDictionaryCommand{bot: bot, channel: channel}
+		command = &UrbanDictionaryCommand{bot: bot, channel: channel, conn: conn}
 	case CMD_URL:
-		command = &LinkCommand{bot: bot, channel: channel}
+		command = &LinkCommand{bot: bot, channel: channel, conn: conn}
 	case CMD_WEATHER:
-		command = &WeatherCommand{bot: bot, channel: channel}
+		command = &WeatherCommand{bot: bot, channel: channel, conn: conn}
 	case CMD_WIKI:
-		command = &WikiCommand{bot: bot, channel: channel}
+		command = &WikiCommand{bot: bot, channel: channel, conn: conn}
 	}
 
 	if command != nil {

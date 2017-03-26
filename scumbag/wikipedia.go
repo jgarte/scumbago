@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	irc "github.com/fluffle/goirc/client"
 )
 
 const (
@@ -20,6 +22,7 @@ type WikiResult struct {
 type WikiCommand struct {
 	bot     *Scumbag
 	channel string
+	conn    *irc.Conn
 }
 
 func (cmd *WikiCommand) Run(args ...string) {
@@ -48,10 +51,10 @@ func (cmd *WikiCommand) Run(args ...string) {
 	}
 
 	if len(result.Content) > 0 {
-		cmd.bot.Msg(cmd.channel, result.Content[0])
+		cmd.bot.Msg(cmd.conn, cmd.channel, result.Content[0])
 	}
 
 	if len(result.URL) > 0 {
-		cmd.bot.Msg(cmd.channel, result.URL[0])
+		cmd.bot.Msg(cmd.conn, cmd.channel, result.URL[0])
 	}
 }
