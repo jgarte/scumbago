@@ -19,7 +19,8 @@
 ## Setup
 
 * Copy and edit `config/bot.json.example`
-* Run `script/create_links_table.sql`
+* Run `script/001-create_links_table.sql`
+* Run `script/002-add_server_and_channel_to_links.sql`
 
 ## Run
 

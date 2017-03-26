@@ -1,4 +1,4 @@
-create table links (
+CREATE TABLE IF NOT EXISTS links (
  id serial,
  url varchar,
  nick varchar,
