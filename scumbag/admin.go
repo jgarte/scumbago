@@ -36,7 +36,8 @@ func (cmd *AdminCommand) Run(args ...string) {
 
 		switch command {
 		case CMD_NICK:
-			cmd.bot.ircClient.Nick(commandArgs)
+			client := cmd.bot.ircClients[cmd.conn.Config().Server]
+			client.Nick(commandArgs)
 		}
 	} else {
 		cmd.bot.Log.WithField("args", args).Error("AdminCommand.Run(): Could not get command args")
