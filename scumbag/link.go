@@ -22,6 +22,8 @@ var (
 type Link struct {
 	Nick      string
 	Url       string
+	Server    string
+	Channel   string
 	CreatedAt time.Time
 }
 
@@ -53,23 +55,25 @@ func (cmd *LinkCommand) Run(args ...string) {
 	cmd.bot.Msg(cmd.conn, cmd.channel, strings.Join(response, URL_SEP))
 }
 
-// Called from a goroutine to save links from `line`.
-func (bot *Scumbag) SaveURLs(line *irc.Line) {
+// Called from a goroutine to save links from `conn.Config().Server` and `line`.
+func (bot *Scumbag) SaveURLs(conn *irc.Conn, line *irc.Line) {
 	nick := line.Nick
+	server := conn.Config().Server
+	channel := line.Args[0]
 	msg := line.Args[1]
 
 	if urls := urlRegexp.FindAllString(msg, -1); urls != nil {
 		for _, url := range urls {
 			var urlMatch string
 
-			err := bot.DB.QueryRow("SELECT url FROM links WHERE url=$1;", url).Scan(&urlMatch)
+			err := bot.DB.QueryRow("SELECT url FROM links WHERE url=$1 AND server=$2 AND channel=$3;", url, server, channel).Scan(&urlMatch)
 			switch {
 			case err == sql.ErrNoRows:
 				// Link doesn't exist, so create one.
-				if _, insertErr := bot.DB.Exec("INSERT INTO links(nick, url, created_at) VALUES($1, $2, $3) RETURNING id;", nick, url, line.Time); insertErr != nil {
+				if _, insertErr := bot.DB.Exec("INSERT INTO links(nick, url, server, channel, created_at) VALUES($1, $2, $3, $4, $5) RETURNING id;", nick, url, server, channel, line.Time); insertErr != nil {
 					bot.Log.WithFields(log.Fields{"insertErr": insertErr}).Error("SaveURLs()")
 				}
-				bot.Log.WithField("URL", url).Debug("SaveURLs(): New Link")
+				bot.Log.WithFields(log.Fields{"URL": url, "server": server, "channel": channel}).Debug("SaveURLs(): New Link")
 
 			case err != nil:
 				bot.Log.WithFields(log.Fields{"err": err}).Error("SaveURLs()")

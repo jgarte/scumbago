@@ -254,8 +254,8 @@ func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 	}).Debug("Channel message.")
 
 	// These functions check the line text and act accordingly.
-	go bot.SaveURLs(line)
-	go bot.SpellcheckLine(line)
+	go bot.SaveURLs(conn, line)
+	go bot.SpellcheckLine(conn, line)
 
 	// This function handles explicit bot commands ("?url", "?sp", etc)
 	go bot.processCommands(conn, line)
@@ -278,6 +278,7 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 	commandName := fields[0]
 	args := strings.Join(fields[1:], " ") // FIXME: This is pretty hackish; just pass a slice of args to Command.Run() below.
 
+	// TODO: These Command args can probably be consolidated in some way.
 	var command Command
 	switch commandName {
 	case CMD_ADMIN:
