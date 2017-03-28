@@ -92,7 +92,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 	if strings.HasPrefix(query, "/") && strings.HasSuffix(query, "/") {
 		urlQuery := strings.Replace(query, "/", "", 2)
 
-		rows, err := cmd.bot.DB.Query(`SELECT nick, url FROM links WHERE url ILIKE '%' || $1 || '%' ORDER BY created_at DESC LIMIT $2;`, urlQuery, SEARCH_LIMIT)
+		rows, err := cmd.bot.DB.Query(`SELECT nick, url, server, channel FROM links WHERE url ILIKE '%' || $1 || '%' AND server=$2 AND channel=$3 ORDER BY created_at DESC LIMIT $4;`, urlQuery, cmd.conn.Config().Server, cmd.channel, SEARCH_LIMIT)
 		if err != nil {
 			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 			return nil, err
@@ -101,7 +101,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 
 		for rows.Next() {
 			link := Link{}
-			err := rows.Scan(&link.Nick, &link.Url)
+			err := rows.Scan(&link.Nick, &link.Url, &link.Server, &link.Channel)
 			if err != nil {
 				cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 				return nil, err
@@ -119,7 +119,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 		// Nick search:  ?url oshuma
 		cmd.bot.Log.WithField("nick", query).Debug("LinkCommand.SearchLinks(): Nick Search")
 
-		rows, err := cmd.bot.DB.Query(`SELECT nick, url FROM links WHERE nick = $1 ORDER BY created_at DESC LIMIT $2;`, query, SEARCH_LIMIT)
+		rows, err := cmd.bot.DB.Query(`SELECT nick, url, server, channel FROM links WHERE nick=$1 AND server=$2 AND channel=$3 ORDER BY created_at DESC LIMIT $4;`, query, cmd.conn.Config().Server, cmd.channel, SEARCH_LIMIT)
 		if err != nil {
 			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 			return nil, err
@@ -128,7 +128,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 
 		for rows.Next() {
 			link := Link{}
-			err := rows.Scan(&link.Nick, &link.Url)
+			err := rows.Scan(&link.Nick, &link.Url, &link.Server, &link.Channel)
 			if err != nil {
 				cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 				return nil, err
