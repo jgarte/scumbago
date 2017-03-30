@@ -41,12 +41,24 @@ func (a ByThumbsUp) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByThumbsUp) Less(i, j int) bool { return a[i].ThumbsUp > a[j].ThumbsUp }
 
 type UrbanDictionaryCommand struct {
-	bot     *Scumbag
-	channel string
-	conn    *irc.Conn
+	BaseCommand
+
+	bot  *Scumbag
+	conn *irc.Conn
+	line *irc.Line
+}
+
+func NewUrbanDictionaryCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *UrbanDictionaryCommand {
+	return &UrbanDictionaryCommand{bot: bot, conn: conn, line: line}
 }
 
 func (cmd *UrbanDictionaryCommand) Run(args ...string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("UrbanDictionaryCommand.Run()")
+		return
+	}
+
 	var requestUrl string
 
 	query := args[0]
@@ -83,7 +95,7 @@ func (cmd *UrbanDictionaryCommand) Run(args ...string) {
 			message = definition.Definition
 		}
 
-		cmd.bot.Msg(cmd.conn, cmd.channel, message)
-		cmd.bot.Msg(cmd.conn, cmd.channel, definition.Permalink)
+		cmd.bot.Msg(cmd.conn, channel, message)
+		cmd.bot.Msg(cmd.conn, channel, definition.Permalink)
 	}
 }

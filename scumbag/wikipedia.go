@@ -20,12 +20,24 @@ type WikiResult struct {
 }
 
 type WikiCommand struct {
-	bot     *Scumbag
-	channel string
-	conn    *irc.Conn
+	BaseCommand
+
+	bot  *Scumbag
+	conn *irc.Conn
+	line *irc.Line
+}
+
+func NewWikiCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *WikiCommand {
+	return &WikiCommand{bot: bot, conn: conn, line: line}
 }
 
 func (cmd *WikiCommand) Run(args ...string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("WikiCommand.Run()")
+		return
+	}
+
 	query := args[0]
 	if query == "" {
 		cmd.bot.Log.Debug("WikiCommand.Run(): No query")
@@ -51,10 +63,10 @@ func (cmd *WikiCommand) Run(args ...string) {
 	}
 
 	if len(result.Content) > 0 {
-		cmd.bot.Msg(cmd.conn, cmd.channel, result.Content[0])
+		cmd.bot.Msg(cmd.conn, channel, result.Content[0])
 	}
 
 	if len(result.URL) > 0 {
-		cmd.bot.Msg(cmd.conn, cmd.channel, result.URL[0])
+		cmd.bot.Msg(cmd.conn, channel, result.URL[0])
 	}
 }

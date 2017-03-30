@@ -56,9 +56,15 @@ type GithubCommitStats struct {
 }
 
 type GithubCommand struct {
-	bot     *Scumbag
-	channel string
-	conn    *irc.Conn
+	BaseCommand
+
+	bot  *Scumbag
+	conn *irc.Conn
+	line *irc.Line
+}
+
+func NewGithubCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *GithubCommand {
+	return &GithubCommand{bot: bot, conn: conn, line: line}
 }
 
 func (cmd *GithubCommand) Run(args ...string) {
@@ -105,6 +111,12 @@ func (cmd *GithubCommand) Run(args ...string) {
 }
 
 func (cmd *GithubCommand) pushEvent(event GithubEvent) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("GithubCommand.pushEvent()")
+		return
+	}
+
 	if len(event.Payload.Commits) > 0 {
 		eventCommit := event.Payload.Commits[len(event.Payload.Commits)-1]
 
@@ -123,19 +135,31 @@ func (cmd *GithubCommand) pushEvent(event GithubEvent) {
 
 		eventMsg := fmt.Sprintf("%s: %s", event.Repo.Name, eventCommit.Message)
 
-		cmd.bot.Msg(cmd.conn, cmd.channel, eventMsg)
-		cmd.bot.Msg(cmd.conn, cmd.channel, commit.HtmlUrl)
+		cmd.bot.Msg(cmd.conn, channel, eventMsg)
+		cmd.bot.Msg(cmd.conn, channel, commit.HtmlUrl)
 	}
 }
 
 func (cmd *GithubCommand) issueCommentEvent(event GithubEvent) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("GithubCommand.issueCommentEvent()")
+		return
+	}
+
 	eventMsg := fmt.Sprintf("%s: %s", event.Repo.Name, event.Payload.Comment.Body)
-	cmd.bot.Msg(cmd.conn, cmd.channel, eventMsg)
-	cmd.bot.Msg(cmd.conn, cmd.channel, event.Payload.Comment.HtmlUrl)
+	cmd.bot.Msg(cmd.conn, channel, eventMsg)
+	cmd.bot.Msg(cmd.conn, channel, event.Payload.Comment.HtmlUrl)
 }
 
 func (cmd *GithubCommand) pullRequestEvent(event GithubEvent) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("GithubCommand.pullRequestEvent()")
+		return
+	}
+
 	eventMsg := fmt.Sprintf("%s: PR: %s", event.Repo.Name, event.Payload.PullRequest.Title)
-	cmd.bot.Msg(cmd.conn, cmd.channel, eventMsg)
-	cmd.bot.Msg(cmd.conn, cmd.channel, event.Payload.PullRequest.HtmlUrl)
+	cmd.bot.Msg(cmd.conn, channel, eventMsg)
+	cmd.bot.Msg(cmd.conn, channel, event.Payload.PullRequest.HtmlUrl)
 }

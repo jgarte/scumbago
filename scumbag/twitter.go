@@ -9,12 +9,24 @@ import (
 )
 
 type TwitterCommand struct {
-	bot     *Scumbag
-	channel string
-	conn    *irc.Conn
+	BaseCommand
+
+	bot  *Scumbag
+	conn *irc.Conn
+	line *irc.Line
+}
+
+func NewTwitterCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *TwitterCommand {
+	return &TwitterCommand{bot: bot, conn: conn, line: line}
 }
 
 func (cmd *TwitterCommand) Run(args ...string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("TwitterCommand.Run()")
+		return
+	}
+
 	if len(args) <= 0 {
 		cmd.bot.Log.WithField("args", args).Debug("TwitterCommand.Run(): No args")
 		return
@@ -40,12 +52,12 @@ func (cmd *TwitterCommand) Run(args ...string) {
 				msg = fmt.Sprintf("Account has no tweets: %s", query)
 			}
 		}
-		cmd.bot.Msg(cmd.conn, cmd.channel, msg)
+		cmd.bot.Msg(cmd.conn, channel, msg)
 	default:
 		status := cmd.searchTwitter(query)
 		if status != nil {
 			msg := fmt.Sprintf("@%s %s", status.User.ScreenName, status.Text)
-			cmd.bot.Msg(cmd.conn, cmd.channel, msg)
+			cmd.bot.Msg(cmd.conn, channel, msg)
 		}
 	}
 }

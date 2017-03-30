@@ -12,12 +12,24 @@ const (
 )
 
 type FigletCommand struct {
-	bot     *Scumbag
-	channel string
-	conn    *irc.Conn
+	BaseCommand
+
+	bot  *Scumbag
+	conn *irc.Conn
+	line *irc.Line
+}
+
+func NewFigletCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *FigletCommand {
+	return &FigletCommand{bot: bot, conn: conn, line: line}
 }
 
 func (cmd *FigletCommand) Run(args ...string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("FigletCommand.Run()")
+		return
+	}
+
 	if len(args) <= 0 {
 		cmd.bot.Log.WithField("args", args).Debug("FigletCommand.Run(): No args")
 		return
@@ -33,7 +45,7 @@ func (cmd *FigletCommand) Run(args ...string) {
 		cmd.bot.Log.WithField("error", err).Error("FigletCommand.Run()")
 	} else {
 		for _, line := range strings.Split(string(output), "\n") {
-			cmd.bot.Msg(cmd.conn, cmd.channel, line)
+			cmd.bot.Msg(cmd.conn, channel, line)
 		}
 	}
 }

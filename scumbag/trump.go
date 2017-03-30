@@ -16,12 +16,24 @@ const (
 )
 
 type TrumpCommand struct {
-	bot     *Scumbag
-	channel string
-	conn    *irc.Conn
+	BaseCommand
+
+	bot  *Scumbag
+	conn *irc.Conn
+	line *irc.Line
+}
+
+func NewTrumpCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *TrumpCommand {
+	return &TrumpCommand{bot: bot, conn: conn, line: line}
 }
 
 func (cmd *TrumpCommand) Run(args ...string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("TrumpCommand.Run()")
+		return
+	}
+
 	response, err := http.Get(WTF_TRUMP_URL)
 	if err != nil {
 		cmd.bot.Log.WithField("error", err).Error("TrumpCommand.Run()")
@@ -47,10 +59,10 @@ func (cmd *TrumpCommand) Run(args ...string) {
 		content := sanitize.HTML(entry.Content.Body[0:300])
 
 		msg := strings.Join([]string{content, "..."}, "")
-		cmd.bot.Msg(cmd.conn, cmd.channel, msg)
+		cmd.bot.Msg(cmd.conn, channel, msg)
 
 		if len(entry.Link) > 0 {
-			cmd.bot.Msg(cmd.conn, cmd.channel, entry.Link[0].Href)
+			cmd.bot.Msg(cmd.conn, channel, entry.Link[0].Href)
 		}
 	}
 }

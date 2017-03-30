@@ -70,12 +70,24 @@ type HourlyTemp struct {
 }
 
 type WeatherCommand struct {
-	bot     *Scumbag
-	channel string
-	conn    *irc.Conn
+	BaseCommand
+
+	bot  *Scumbag
+	conn *irc.Conn
+	line *irc.Line
+}
+
+func NewWeatherCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *WeatherCommand {
+	return &WeatherCommand{bot: bot, conn: conn, line: line}
 }
 
 func (cmd *WeatherCommand) Run(args ...string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.Run()")
+		return
+	}
+
 	query := args[0]
 	if query == "" {
 		cmd.bot.Log.Debug("WeatherCommand.Run(): No query")
@@ -97,14 +109,20 @@ func (cmd *WeatherCommand) Run(args ...string) {
 		case "-hourly":
 			cmd.hourlyForecast(cmdArgs)
 		default:
-			cmd.bot.Msg(cmd.conn, cmd.channel, "?weather <location/zip>")
-			cmd.bot.Msg(cmd.conn, cmd.channel, "?weather -forecast <location/zip>")
-			cmd.bot.Msg(cmd.conn, cmd.channel, "?weather -hourly <location/zip>")
+			cmd.bot.Msg(cmd.conn, channel, "?weather <location/zip>")
+			cmd.bot.Msg(cmd.conn, channel, "?weather -forecast <location/zip>")
+			cmd.bot.Msg(cmd.conn, channel, "?weather -hourly <location/zip>")
 		}
 	}
 }
 
 func (cmd *WeatherCommand) currentConditions(args []string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.currentConditions()")
+		return
+	}
+
 	apiKey := cmd.bot.Config.WeatherUnderground.Key
 	requestUrl := fmt.Sprintf(WEATHER_API_URL, apiKey, "conditions", args[0])
 	cmd.bot.Log.WithField("requestUrl", requestUrl).Debug("WeatherCommand.currentConditions()")
@@ -124,13 +142,19 @@ func (cmd *WeatherCommand) currentConditions(args []string) {
 
 	if result.Observation.Temperature != "" {
 		msg := fmt.Sprintf("%s / %s humidity", result.Observation.Temperature, result.Observation.Humidity)
-		cmd.bot.Msg(cmd.conn, cmd.channel, msg)
+		cmd.bot.Msg(cmd.conn, channel, msg)
 	} else {
-		cmd.bot.Msg(cmd.conn, cmd.channel, "WTF zip code is that?")
+		cmd.bot.Msg(cmd.conn, channel, "WTF zip code is that?")
 	}
 }
 
 func (cmd *WeatherCommand) currentForecast(args []string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.currentForecast()")
+		return
+	}
+
 	apiKey := cmd.bot.Config.WeatherUnderground.Key
 	requestUrl := fmt.Sprintf(WEATHER_API_URL, apiKey, "forecast", args[1])
 	cmd.bot.Log.WithField("requestUrl", requestUrl).Debug("WeatherCommand.currentForecast()")
@@ -154,10 +178,16 @@ func (cmd *WeatherCommand) currentForecast(args []string) {
 	}
 
 	msg := strings.Join(forecast, "  ")
-	cmd.bot.Msg(cmd.conn, cmd.channel, msg)
+	cmd.bot.Msg(cmd.conn, channel, msg)
 }
 
 func (cmd *WeatherCommand) hourlyForecast(args []string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.hourlyForecast()")
+		return
+	}
+
 	apiKey := cmd.bot.Config.WeatherUnderground.Key
 	requestUrl := fmt.Sprintf(WEATHER_API_URL, apiKey, "hourly", args[1])
 	cmd.bot.Log.WithField("requestUrl", requestUrl).Debug("WeatherCommand.hourlyForecast()")
@@ -184,5 +214,5 @@ func (cmd *WeatherCommand) hourlyForecast(args []string) {
 	forecast = forecast[:3]
 
 	msg := strings.Join(forecast, "  ")
-	cmd.bot.Msg(cmd.conn, cmd.channel, msg)
+	cmd.bot.Msg(cmd.conn, channel, msg)
 }

@@ -11,15 +11,26 @@ const (
 )
 
 type AdminCommand struct {
-	bot     *Scumbag
-	channel string
-	conn    *irc.Conn
-	line    *irc.Line
+	BaseCommand
+
+	bot  *Scumbag
+	conn *irc.Conn
+	line *irc.Line
+}
+
+func NewAdminCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *AdminCommand {
+	return &AdminCommand{bot: bot, conn: conn, line: line}
 }
 
 func (cmd *AdminCommand) Run(args ...string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("AdminCommand.Run()")
+		return
+	}
+
 	if !cmd.bot.Admin(cmd.line.Nick) {
-		cmd.bot.Msg(cmd.conn, cmd.channel, "Fuck off.")
+		cmd.bot.Msg(cmd.conn, channel, "Fuck off.")
 		return
 	}
 

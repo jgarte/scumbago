@@ -19,13 +19,25 @@ var (
 )
 
 type SpellcheckCommand struct {
-	bot     *Scumbag
-	channel string
-	conn    *irc.Conn
+	BaseCommand
+
+	bot  *Scumbag
+	conn *irc.Conn
+	line *irc.Line
+}
+
+func NewSpellcheckCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *SpellcheckCommand {
+	return &SpellcheckCommand{bot: bot, conn: conn, line: line}
 }
 
 // Handler for "?sp <word>"
 func (cmd *SpellcheckCommand) Run(args ...string) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("SpellcheckCommand.Run()")
+		return
+	}
+
 	if len(args) <= 0 {
 		cmd.bot.Log.WithField("args", args).Debug("SpellcheckCommand.Run(): No args")
 		return
@@ -43,7 +55,7 @@ func (cmd *SpellcheckCommand) Run(args ...string) {
 		return
 	}
 
-	cmd.bot.Msg(cmd.conn, cmd.channel, response)
+	cmd.bot.Msg(cmd.conn, channel, response)
 }
 
 // Called from a goroutine to search for text like "some word (sp?) to spellcheck"
@@ -52,9 +64,14 @@ func (bot *Scumbag) SpellcheckLine(conn *irc.Conn, line *irc.Line) {
 		return
 	}
 
-	channel := line.Args[0]
+	cmd := NewSpellcheckCommand(bot, conn, line)
 
-	cmd := &SpellcheckCommand{bot: bot, channel: channel, conn: conn}
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("AdminCommand.Run()")
+		return
+	}
+
 	if word, ok := cmd.getWordFromLine(line); ok == true {
 		response, err := cmd.Spellcheck(word)
 		if err != nil {
@@ -62,7 +79,7 @@ func (bot *Scumbag) SpellcheckLine(conn *irc.Conn, line *irc.Line) {
 			return
 		}
 
-		cmd.bot.Msg(cmd.conn, cmd.channel, response)
+		cmd.bot.Msg(cmd.conn, channel, response)
 	}
 }
 

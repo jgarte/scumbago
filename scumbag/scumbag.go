@@ -43,10 +43,6 @@ const (
 	REDDIT_USER_AGENT = "scumbag v0.666"
 )
 
-type Command interface {
-	Run(args ...string)
-}
-
 type Scumbag struct {
 	Config  *BotConfig
 	DB      *sql.DB
@@ -267,7 +263,6 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		return
 	}
 
-	channel := line.Args[0]
 	fields := strings.Fields(line.Args[1])
 
 	if len(fields) <= 0 {
@@ -278,31 +273,30 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 	commandName := fields[0]
 	args := strings.Join(fields[1:], " ") // FIXME: This is pretty hackish; just pass a slice of args to Command.Run() below.
 
-	// TODO: These Command args can probably be consolidated in some way.
 	var command Command
 	switch commandName {
 	case CMD_ADMIN:
-		command = &AdminCommand{bot: bot, channel: channel, conn: conn, line: line}
+		command = NewAdminCommand(bot, conn, line)
 	case CMD_FIGLET:
-		command = &FigletCommand{bot: bot, channel: channel, conn: conn}
+		command = NewFigletCommand(bot, conn, line)
 	case CMD_GITHUB:
-		command = &GithubCommand{bot: bot, channel: channel, conn: conn}
+		command = NewGithubCommand(bot, conn, line)
 	case CMD_REDDIT:
-		command = &RedditCommand{bot: bot, channel: channel, conn: conn}
+		command = NewRedditCommand(bot, conn, line)
 	case CMD_SPELL:
-		command = &SpellcheckCommand{bot: bot, channel: channel, conn: conn}
+		command = NewSpellcheckCommand(bot, conn, line)
 	case CMD_TRUMP:
-		command = &TrumpCommand{bot: bot, channel: channel, conn: conn}
+		command = NewTrumpCommand(bot, conn, line)
 	case CMD_TWITTER:
-		command = &TwitterCommand{bot: bot, channel: channel, conn: conn}
+		command = NewTwitterCommand(bot, conn, line)
 	case CMD_URBAN_DICT:
-		command = &UrbanDictionaryCommand{bot: bot, channel: channel, conn: conn}
+		command = NewUrbanDictionaryCommand(bot, conn, line)
 	case CMD_URL:
-		command = &LinkCommand{bot: bot, channel: channel, conn: conn}
+		command = NewLinkCommand(bot, conn, line)
 	case CMD_WEATHER:
-		command = &WeatherCommand{bot: bot, channel: channel, conn: conn}
+		command = NewWeatherCommand(bot, conn, line)
 	case CMD_WIKI:
-		command = &WikiCommand{bot: bot, channel: channel, conn: conn}
+		command = NewWikiCommand(bot, conn, line)
 	}
 
 	if command != nil {

@@ -16,9 +16,15 @@ var (
 )
 
 type RedditCommand struct {
-	bot     *Scumbag
-	channel string
-	conn    *irc.Conn
+	BaseCommand
+
+	bot  *Scumbag
+	conn *irc.Conn
+	line *irc.Line
+}
+
+func NewRedditCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *RedditCommand {
+	return &RedditCommand{bot: bot, conn: conn, line: line}
 }
 
 func (cmd *RedditCommand) Run(args ...string) {
@@ -101,7 +107,13 @@ func (cmd *RedditCommand) randomSubredditSubmission(subreddit string) {
 }
 
 func (cmd *RedditCommand) msg(submission *geddit.Submission) {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("RedditCommand.msg()")
+		return
+	}
+
 	// This is needed because the URL returned has HTML escaped params for some dumbass reason.
 	url := strings.Replace(submission.URL, "&amp;", "&", -1)
-	cmd.bot.Msg(cmd.conn, cmd.channel, url)
+	cmd.bot.Msg(cmd.conn, channel, url)
 }
