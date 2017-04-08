@@ -161,7 +161,7 @@ func (bot *Scumbag) setupLogger(logFilename *string) error {
 func (bot *Scumbag) setupDatabase() error {
 	bot.Log.Debug("setupDatabase()")
 
-	databaseParams := fmt.Sprintf("dbname=%s user=%s password=%s", bot.Config.Database.Name, bot.Config.Database.User, bot.Config.Database.Password)
+	databaseParams := fmt.Sprintf("host=%s sslmode=%s dbname=%s user=%s password=%s", bot.Config.Database.Host, bot.Config.Database.SSL, bot.Config.Database.Name, bot.Config.Database.User, bot.Config.Database.Password)
 	session, err := sql.Open("postgres", databaseParams)
 	if err != nil {
 		bot.Log.WithField("error", err).Fatal("Database Connection Error")

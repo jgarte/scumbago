@@ -12,6 +12,7 @@
 * go get [github.com/fluffle/goirc](https://github.com/fluffle/goirc)
 * go get [github.com/Sirupsen/logrus](https://github.com/Sirupsen/logrus)
 * go get [golang.org/x/oauth2](https://godoc.org/golang.org/x/oauth2)
+* go get [golang.org/x/tools/blog/atom](https://godoc.org/golang.org/x/tools/blog/atom)
 * go get [github.com/lib/pq](https://github.com/lib/pq)
 * go get [github.com/kennygrant/sanitize](https://github.com/kennygrant/sanitize)
 * go get [github.com/dghubble/go-twitter/twitter](https://github.com/dghubble/go-twitter)

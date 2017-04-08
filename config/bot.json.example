@@ -16,6 +16,8 @@
   "LogLevel": "Info",
 
   "Database": {
+    "Host": "db.example.com",
+    "SSL": "disable",
     "Name": "scumbag",
     "User": "database_user",
     "Password": "database_password"

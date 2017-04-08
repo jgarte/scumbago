@@ -24,6 +24,8 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
+	Host     string
+	SSL      string
 	Name     string
 	User     string
 	Password string
