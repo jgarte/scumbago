@@ -9,6 +9,7 @@ import (
 
 const (
 	GITHUB_USER_EVENTS_URL = "https://api.github.com/users/%s/events"
+	GITHUB_HELP            = "?gh <username>"
 )
 
 type GithubEvent struct {
@@ -108,6 +109,16 @@ func (cmd *GithubCommand) Run(args ...string) {
 			cmd.bot.Log.WithField("event", event).Warn("GithubCommand.Run(): Unhandled event")
 		}
 	}
+}
+
+func (cmd *GithubCommand) Help() {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("GithubCommand.Help()")
+		return
+	}
+
+	cmd.bot.Msg(cmd.conn, channel, GITHUB_HELP)
 }
 
 func (cmd *GithubCommand) pushEvent(event GithubEvent) {

@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	FIGLET = "/usr/bin/figlet"
+	FIGLET      = "/usr/bin/figlet"
+	FIGLET_HELP = "?fig <phrase>"
 )
 
 type FigletCommand struct {
@@ -48,4 +49,14 @@ func (cmd *FigletCommand) Run(args ...string) {
 			cmd.bot.Msg(cmd.conn, channel, line)
 		}
 	}
+}
+
+func (cmd *FigletCommand) Help() {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("FigletCommand.Help()")
+		return
+	}
+
+	cmd.bot.Msg(cmd.conn, channel, FIGLET_HELP)
 }

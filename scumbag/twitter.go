@@ -8,6 +8,10 @@ import (
 	irc "github.com/fluffle/goirc/client"
 )
 
+const (
+	TWITTER_HELP = "?twitter <@username> or <search_term>"
+)
+
 type TwitterCommand struct {
 	BaseCommand
 
@@ -60,6 +64,16 @@ func (cmd *TwitterCommand) Run(args ...string) {
 			cmd.bot.Msg(cmd.conn, channel, msg)
 		}
 	}
+}
+
+func (cmd *TwitterCommand) Help() {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("TwitterCommand.Help()")
+		return
+	}
+
+	cmd.bot.Msg(cmd.conn, channel, TWITTER_HELP)
 }
 
 func (cmd *TwitterCommand) screennameStatus(query string) (*twitter.User, bool) {

@@ -10,6 +10,7 @@ import (
 
 const (
 	WIKI_API_URL = "https://en.wikipedia.org/w/api.php?action=opensearch&search=%s&format=json&limit=1&redirects=resolve"
+	WIKI_HELP    = "?wp <phrase>"
 )
 
 type WikiResult struct {
@@ -69,4 +70,14 @@ func (cmd *WikiCommand) Run(args ...string) {
 	if len(result.URL) > 0 {
 		cmd.bot.Msg(cmd.conn, channel, result.URL[0])
 	}
+}
+
+func (cmd *WikiCommand) Help() {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("WikiCommand.Help()")
+		return
+	}
+
+	cmd.bot.Msg(cmd.conn, channel, WIKI_HELP)
 }

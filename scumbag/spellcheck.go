@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	ASPELL        = "/usr/bin/aspell"
-	ASPELL_REGEXP = `\A&\s\w+\s\d+\s\d+:\s(.+)\z`
+	ASPELL          = "/usr/bin/aspell"
+	ASPELL_REGEXP   = `\A&\s\w+\s\d+\s\d+:\s(.+)\z`
+	SPELLCHECK_HELP = "?sp <word>"
 )
 
 var (
@@ -56,6 +57,16 @@ func (cmd *SpellcheckCommand) Run(args ...string) {
 	}
 
 	cmd.bot.Msg(cmd.conn, channel, response)
+}
+
+func (cmd *SpellcheckCommand) Help() {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("SpellcheckCommand.Help()")
+		return
+	}
+
+	cmd.bot.Msg(cmd.conn, channel, SPELLCHECK_HELP)
 }
 
 // Called from a goroutine to search for text like "some word (sp?) to spellcheck"

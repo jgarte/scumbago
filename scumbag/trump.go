@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	TRUMP_HELP    = "?trump - Returns the latest WTF Trump news."
 	WTF_TRUMP_URL = "https://whatthefuckjusthappenedtoday.com/atom.xml"
 )
 
@@ -65,4 +66,14 @@ func (cmd *TrumpCommand) Run(args ...string) {
 			cmd.bot.Msg(cmd.conn, channel, entry.Link[0].Href)
 		}
 	}
+}
+
+func (cmd *TrumpCommand) Help() {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("TrumpCommand.Help()")
+		return
+	}
+
+	cmd.bot.Msg(cmd.conn, channel, TRUMP_HELP)
 }

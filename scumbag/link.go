@@ -13,6 +13,8 @@ import (
 const (
 	SEARCH_LIMIT = 5
 	URL_SEP      = " | "
+
+	URL_HELP = "?url <username> or /<search>/"
 )
 
 var (
@@ -65,6 +67,16 @@ func (cmd *LinkCommand) Run(args ...string) {
 	}
 
 	cmd.bot.Msg(cmd.conn, channel, strings.Join(response, URL_SEP))
+}
+
+func (cmd *LinkCommand) Help() {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("LinkCommand.Help()")
+		return
+	}
+
+	cmd.bot.Msg(cmd.conn, channel, URL_HELP)
 }
 
 // Called from a goroutine to save links from `conn.Config().Server` and `line`.

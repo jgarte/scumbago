@@ -12,6 +12,8 @@ import (
 const (
 	URBAN_DICT_API_URL        = "http://api.urbandictionary.com/v0/define?term=%s&page=1"
 	URBAN_DICT_RANDOM_API_URL = "http://api.urbandictionary.com/v0/random?page=1"
+
+	URBAN_DICT_HELP = "?ud <phrase>"
 )
 
 type UrbanDictResult struct {
@@ -98,4 +100,14 @@ func (cmd *UrbanDictionaryCommand) Run(args ...string) {
 		cmd.bot.Msg(cmd.conn, channel, message)
 		cmd.bot.Msg(cmd.conn, channel, definition.Permalink)
 	}
+}
+
+func (cmd *UrbanDictionaryCommand) Help() {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("UrbanDictionaryCommand.Help()")
+		return
+	}
+
+	cmd.bot.Msg(cmd.conn, channel, URBAN_DICT_HELP)
 }

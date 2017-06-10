@@ -25,6 +25,7 @@ const (
 	CMD_ADMIN      = "?admin"
 	CMD_FIGLET     = "?fig"
 	CMD_GITHUB     = "?gh"
+	CMD_HELP       = "?help"
 	CMD_REDDIT     = "?reddit"
 	CMD_SPELL      = "?sp"
 	CMD_TRUMP      = "?trump"
@@ -281,6 +282,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewFigletCommand(bot, conn, line)
 	case CMD_GITHUB:
 		command = NewGithubCommand(bot, conn, line)
+	case CMD_HELP:
+		command = NewHelpCommand(bot, conn, line)
 	case CMD_REDDIT:
 		command = NewRedditCommand(bot, conn, line)
 	case CMD_SPELL:

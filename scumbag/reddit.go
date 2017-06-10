@@ -11,6 +11,10 @@ import (
 	"github.com/jzelinskie/geddit"
 )
 
+const (
+	REDDIT_HELP = "?reddit <subreddit>"
+)
+
 var (
 	selfPostRegexp = regexp.MustCompile(`\Aself\.`)
 )
@@ -51,6 +55,16 @@ func (cmd *RedditCommand) Run(args ...string) {
 			cmd.randomSubredditSubmission(cmdArgs[0])
 		}
 	}
+}
+
+func (cmd *RedditCommand) Help() {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("RedditCommand.Help()")
+		return
+	}
+
+	cmd.bot.Msg(cmd.conn, channel, REDDIT_HELP)
 }
 
 func (cmd *RedditCommand) getLatestSubmission(submissions []*geddit.Submission) (*geddit.Submission, error) {

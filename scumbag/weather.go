@@ -12,6 +12,12 @@ const (
 	WEATHER_API_URL = "http://api.wunderground.com/api/%s/%s/q/%s.json"
 )
 
+var WEATHER_HELP = [...]string{
+	"?weather <location/zip>",
+	"?weather -forecast <location/zip>",
+	"?weather -hourly <location/zip>",
+}
+
 type ConditionsResponse struct {
 	Observation `json:"current_observation"`
 }
@@ -113,6 +119,18 @@ func (cmd *WeatherCommand) Run(args ...string) {
 			cmd.bot.Msg(cmd.conn, channel, "?weather -forecast <location/zip>")
 			cmd.bot.Msg(cmd.conn, channel, "?weather -hourly <location/zip>")
 		}
+	}
+}
+
+func (cmd *WeatherCommand) Help() {
+	channel, err := cmd.Channel(cmd.line)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.Help()")
+		return
+	}
+
+	for _, helpText := range WEATHER_HELP {
+		cmd.bot.Msg(cmd.conn, channel, helpText)
 	}
 }
 
