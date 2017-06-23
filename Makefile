@@ -1,5 +1,5 @@
 BIN_DIR=build
-BIN=$(BIN_DIR)/scumbag
+BIN=$(BIN_DIR)/scumbago
 BUILD_SHA=$(shell git describe --always --long --dirty)
 
 BUILD_OPTS=-i -v -buildmode exe -o ${BIN}
