@@ -42,8 +42,6 @@ const (
 
 	// Default log file.
 	LOG_FILE = "log/scumbag.log"
-
-	REDDIT_USER_AGENT = "scumbag v0.666"
 )
 
 func Version() string {
@@ -182,7 +180,7 @@ func (bot *Scumbag) setupDatabase() error {
 func (bot *Scumbag) setupRedditSession() {
 	bot.Log.Debug("setupRedditSession()")
 
-	bot.Reddit = geddit.NewSession(REDDIT_USER_AGENT)
+	bot.Reddit = geddit.NewSession(Version())
 }
 
 func (bot *Scumbag) setupTwitterClient() {
