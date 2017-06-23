@@ -34,6 +34,7 @@ const (
 	CMD_TWITTER    = "?twitter"
 	CMD_URBAN_DICT = "?ud"
 	CMD_URL        = "?url"
+	CMD_VERSION    = "?version"
 	CMD_WEATHER    = "?weather"
 	CMD_WIKI       = "?wp"
 
@@ -300,6 +301,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewUrbanDictionaryCommand(bot, conn, line)
 	case CMD_URL:
 		command = NewLinkCommand(bot, conn, line)
+	case CMD_VERSION:
+		command = NewVersionCommand(bot, conn, line)
 	case CMD_WEATHER:
 		command = NewWeatherCommand(bot, conn, line)
 	case CMD_WIKI:
