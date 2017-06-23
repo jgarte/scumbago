@@ -20,6 +20,8 @@ import (
 )
 
 const (
+	VERSION = "1.0.0"
+
 	CMD_ARG_REGEX = `(\w+)\s{1}\(sp\?\)`
 
 	CMD_ADMIN      = "?admin"
@@ -43,6 +45,10 @@ const (
 
 	REDDIT_USER_AGENT = "scumbag v0.666"
 )
+
+func Version() string {
+	return fmt.Sprintf("scumbag v%s", VERSION)
+}
 
 type Scumbag struct {
 	Config  *BotConfig

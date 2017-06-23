@@ -12,7 +12,13 @@ import (
 func main() {
 	configFile := flag.String("config", scumbag.CONFIG_FILE, "Bot config JSON file")
 	logFilename := flag.String("log", scumbag.LOG_FILE, "Bot log file")
+	versionFlag := flag.Bool("version", false, "Print version")
 	flag.Parse()
+
+	if *versionFlag {
+		fmt.Printf("%s\n", scumbag.Version())
+		os.Exit(0)
+	}
 
 	bot, err := scumbag.NewBot(configFile, logFilename)
 	if err != nil {
