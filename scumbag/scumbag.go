@@ -19,9 +19,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const (
-	VERSION = "1.0.0"
+var VERSION = "1.0.0"
+var BUILD = "HEAD"
 
+const (
 	CMD_ARG_REGEX = `(\w+)\s{1}\(sp\?\)`
 
 	CMD_ADMIN      = "?admin"
@@ -46,7 +47,7 @@ const (
 )
 
 func Version() string {
-	return fmt.Sprintf("scumbag v%s", VERSION)
+	return fmt.Sprintf("scumbag v%s-%s", VERSION, BUILD)
 }
 
 type Scumbag struct {
