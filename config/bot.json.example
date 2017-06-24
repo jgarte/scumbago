@@ -33,5 +33,9 @@
 
   "WeatherUnderground": {
     "Key": "foo_key"
+  },
+
+  "WolframAlpha": {
+    "AppID": "your app ID"
   }
 }

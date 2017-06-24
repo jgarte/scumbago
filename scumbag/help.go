@@ -29,6 +29,7 @@ const (
 	HELP_URL        = "url"
 	HELP_WEATHER    = "weather"
 	HELP_WIKI       = "wp"
+	HELP_WOLFRAM    = "wolfram"
 )
 
 // Used when just "?help" is given.
@@ -45,6 +46,7 @@ var COMMANDS = []string{
 	HELP_URL,
 	HELP_WEATHER,
 	HELP_WIKI,
+	HELP_WOLFRAM,
 }
 
 func NewHelpCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *HelpCommand {
@@ -81,6 +83,8 @@ func (cmd *HelpCommand) Run(args ...string) {
 		NewWeatherCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case HELP_WIKI:
 		NewWikiCommand(cmd.bot, cmd.conn, cmd.line).Help()
+	case HELP_WOLFRAM:
+		NewWolframAlphaCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	default:
 		NewHelpCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	}

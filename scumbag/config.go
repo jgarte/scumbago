@@ -15,6 +15,7 @@ type BotConfig struct {
 	BreweryDB          *BreweryDBConfig
 	Twitter            *TwitterConfig
 	WeatherUnderground *WeatherUndergroundConfig
+	WolframAlpha       *WolframAlphaConfig
 }
 
 type ServerConfig struct {
@@ -42,6 +43,10 @@ type TwitterConfig struct {
 
 type WeatherUndergroundConfig struct {
 	Key string
+}
+
+type WolframAlphaConfig struct {
+	AppID string
 }
 
 func LoadConfig(configFile *string) (*BotConfig, error) {

@@ -39,6 +39,7 @@ const (
 	CMD_VERSION    = "?version"
 	CMD_WEATHER    = "?weather"
 	CMD_WIKI       = "?wp"
+	CMD_WOLFRAM    = "?wolfram"
 
 	// Default config file.
 	CONFIG_FILE = "config/bot.json"
@@ -311,6 +312,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewWeatherCommand(bot, conn, line)
 	case CMD_WIKI:
 		command = NewWikiCommand(bot, conn, line)
+	case CMD_WOLFRAM:
+		command = NewWolframAlphaCommand(bot, conn, line)
 	}
 
 	if command != nil {
