@@ -19,7 +19,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var VERSION = "1.0.0"
+var VERSION = "1.1.0"
 var BUILD = "HEAD"
 
 const (
