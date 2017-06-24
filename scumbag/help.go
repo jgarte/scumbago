@@ -15,7 +15,9 @@ type HelpCommand struct {
 }
 
 // These are basically the same as the CMD_* constants, only without the leading "?".
+// TODO: Just use the CMD_* constants and strip out the leading "?".
 const (
+	HELP_BEER       = "beer"
 	HELP_FIGLET     = "fig"
 	HELP_GITHUB     = "gh"
 	HELP_HELP       = "help"

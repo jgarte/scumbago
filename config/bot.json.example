@@ -23,6 +23,10 @@
     "Password": "database_password"
   },
 
+  "BreweryDB": {
+    "Key": "brewerydb.com API key"
+  },
+
   "Twitter": {
     "AccessToken": "foo_token"
   },

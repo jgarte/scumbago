@@ -12,6 +12,7 @@ type BotConfig struct {
 	Admins             []string
 	LogLevel           string
 	Database           *DatabaseConfig
+	BreweryDB          *BreweryDBConfig
 	Twitter            *TwitterConfig
 	WeatherUnderground *WeatherUndergroundConfig
 }
@@ -29,6 +30,10 @@ type DatabaseConfig struct {
 	Name     string
 	User     string
 	Password string
+}
+
+type BreweryDBConfig struct {
+	Key string
 }
 
 type TwitterConfig struct {

@@ -26,6 +26,7 @@ const (
 	CMD_ARG_REGEX = `(\w+)\s{1}\(sp\?\)`
 
 	CMD_ADMIN      = "?admin"
+	CMD_BEER       = "?beer"
 	CMD_FIGLET     = "?fig"
 	CMD_GITHUB     = "?gh"
 	CMD_HELP       = "?help"
@@ -284,6 +285,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 	switch commandName {
 	case CMD_ADMIN:
 		command = NewAdminCommand(bot, conn, line)
+	case CMD_BEER:
+		command = NewBeerCommand(bot, conn, line)
 	case CMD_FIGLET:
 		command = NewFigletCommand(bot, conn, line)
 	case CMD_GITHUB:
