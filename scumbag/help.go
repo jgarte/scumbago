@@ -33,6 +33,7 @@ const (
 
 // Used when just "?help" is given.
 var COMMANDS = []string{
+	HELP_BEER,
 	HELP_FIGLET,
 	HELP_GITHUB,
 	HELP_HELP,
@@ -58,6 +59,8 @@ func (cmd *HelpCommand) Run(args ...string) {
 
 	helpPhrase := args[0]
 	switch helpPhrase {
+	case HELP_BEER:
+		NewBeerCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case HELP_FIGLET:
 		NewFigletCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case HELP_GITHUB:
