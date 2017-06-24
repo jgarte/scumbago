@@ -16,3 +16,4 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   cp -v $OLD_RELEASE $OLD_RELEASE-$VERSION
   mv -fv $NEW_RELEASE $OLD_RELEASE
 fi
+echo
