@@ -103,7 +103,7 @@ func (cmd *WeatherCommand) Run(args ...string) {
 	cmdArgs := strings.Fields(query)
 
 	if len(cmdArgs) == 1 {
-		cmd.currentConditions(cmdArgs)
+		cmd.currentConditions(channel, cmdArgs)
 	} else {
 		if len(cmdArgs) == 0 {
 			return
@@ -111,13 +111,11 @@ func (cmd *WeatherCommand) Run(args ...string) {
 
 		switch cmdArgs[0] {
 		case "-forecast":
-			cmd.currentForecast(cmdArgs)
+			cmd.currentForecast(channel, cmdArgs)
 		case "-hourly":
-			cmd.hourlyForecast(cmdArgs)
+			cmd.hourlyForecast(channel, cmdArgs)
 		default:
-			cmd.bot.Msg(cmd.conn, channel, "?weather <location/zip>")
-			cmd.bot.Msg(cmd.conn, channel, "?weather -forecast <location/zip>")
-			cmd.bot.Msg(cmd.conn, channel, "?weather -hourly <location/zip>")
+			cmd.Help()
 		}
 	}
 }
@@ -134,13 +132,7 @@ func (cmd *WeatherCommand) Help() {
 	}
 }
 
-func (cmd *WeatherCommand) currentConditions(args []string) {
-	channel, err := cmd.Channel(cmd.line)
-	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.currentConditions()")
-		return
-	}
-
+func (cmd *WeatherCommand) currentConditions(channel string, args []string) {
 	apiKey := cmd.bot.Config.WeatherUnderground.Key
 	requestUrl := fmt.Sprintf(WEATHER_API_URL, apiKey, "conditions", args[0])
 	cmd.bot.Log.WithField("requestUrl", requestUrl).Debug("WeatherCommand.currentConditions()")
@@ -166,13 +158,7 @@ func (cmd *WeatherCommand) currentConditions(args []string) {
 	}
 }
 
-func (cmd *WeatherCommand) currentForecast(args []string) {
-	channel, err := cmd.Channel(cmd.line)
-	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.currentForecast()")
-		return
-	}
-
+func (cmd *WeatherCommand) currentForecast(channel string, args []string) {
 	apiKey := cmd.bot.Config.WeatherUnderground.Key
 	requestUrl := fmt.Sprintf(WEATHER_API_URL, apiKey, "forecast", args[1])
 	cmd.bot.Log.WithField("requestUrl", requestUrl).Debug("WeatherCommand.currentForecast()")
@@ -199,13 +185,7 @@ func (cmd *WeatherCommand) currentForecast(args []string) {
 	cmd.bot.Msg(cmd.conn, channel, msg)
 }
 
-func (cmd *WeatherCommand) hourlyForecast(args []string) {
-	channel, err := cmd.Channel(cmd.line)
-	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.hourlyForecast()")
-		return
-	}
-
+func (cmd *WeatherCommand) hourlyForecast(channel string, args []string) {
 	apiKey := cmd.bot.Config.WeatherUnderground.Key
 	requestUrl := fmt.Sprintf(WEATHER_API_URL, apiKey, "hourly", args[1])
 	cmd.bot.Log.WithField("requestUrl", requestUrl).Debug("WeatherCommand.hourlyForecast()")
