@@ -14,39 +14,21 @@ type HelpCommand struct {
 	line *irc.Line
 }
 
-// These are basically the same as the CMD_* constants, only without the leading "?".
-// TODO: Just use the CMD_* constants and strip out the leading "?".
-const (
-	HELP_BEER       = "beer"
-	HELP_FIGLET     = "fig"
-	HELP_GITHUB     = "gh"
-	HELP_HELP       = "help"
-	HELP_REDDIT     = "reddit"
-	HELP_SPELL      = "sp"
-	HELP_TRUMP      = "trump"
-	HELP_TWITTER    = "twitter"
-	HELP_URBAN_DICT = "ud"
-	HELP_URL        = "url"
-	HELP_WEATHER    = "weather"
-	HELP_WIKI       = "wp"
-	HELP_WOLFRAM    = "wolfram"
-)
-
 // Used when just "?help" is given.
 var COMMANDS = []string{
-	HELP_BEER,
-	HELP_FIGLET,
-	HELP_GITHUB,
-	HELP_HELP,
-	HELP_REDDIT,
-	HELP_SPELL,
-	HELP_TRUMP,
-	HELP_TWITTER,
-	HELP_URBAN_DICT,
-	HELP_URL,
-	HELP_WEATHER,
-	HELP_WIKI,
-	HELP_WOLFRAM,
+	CMD_BEER,
+	CMD_FIGLET,
+	CMD_GITHUB,
+	CMD_HELP,
+	CMD_REDDIT,
+	CMD_SPELL,
+	CMD_TRUMP,
+	CMD_TWITTER,
+	CMD_URBAN_DICT,
+	CMD_URL,
+	CMD_WEATHER,
+	CMD_WIKI,
+	CMD_WOLFRAM,
 }
 
 func NewHelpCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *HelpCommand {
@@ -61,29 +43,29 @@ func (cmd *HelpCommand) Run(args ...string) {
 
 	helpPhrase := args[0]
 	switch helpPhrase {
-	case HELP_BEER:
+	case strings.TrimLeft(CMD_BEER, CMD_PREFIX):
 		NewBeerCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_FIGLET:
+	case strings.TrimLeft(CMD_FIGLET, CMD_PREFIX):
 		NewFigletCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_GITHUB:
+	case strings.TrimLeft(CMD_GITHUB, CMD_PREFIX):
 		NewGithubCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_REDDIT:
+	case strings.TrimLeft(CMD_REDDIT, CMD_PREFIX):
 		NewRedditCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_SPELL:
+	case strings.TrimLeft(CMD_SPELL, CMD_PREFIX):
 		NewSpellcheckCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_TRUMP:
+	case strings.TrimLeft(CMD_TRUMP, CMD_PREFIX):
 		NewTrumpCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_TWITTER:
+	case strings.TrimLeft(CMD_TWITTER, CMD_PREFIX):
 		NewTwitterCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_URBAN_DICT:
+	case strings.TrimLeft(CMD_URBAN_DICT, CMD_PREFIX):
 		NewUrbanDictionaryCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_URL:
+	case strings.TrimLeft(CMD_URL, CMD_PREFIX):
 		NewLinkCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_WEATHER:
+	case strings.TrimLeft(CMD_WEATHER, CMD_PREFIX):
 		NewWeatherCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_WIKI:
+	case strings.TrimLeft(CMD_WIKI, CMD_PREFIX):
 		NewWikiCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case HELP_WOLFRAM:
+	case strings.TrimLeft(CMD_WOLFRAM, CMD_PREFIX):
 		NewWolframAlphaCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	default:
 		NewHelpCommand(cmd.bot, cmd.conn, cmd.line).Help()
@@ -97,6 +79,12 @@ func (cmd *HelpCommand) Help() {
 		return
 	}
 
-	helpText := "commands: " + strings.Join(COMMANDS, ", ")
+	// Strip CMD_PREFIX from the CMD_* constants.
+	helpCommands := make([]string, len(COMMANDS))
+	for i, command := range COMMANDS {
+		helpCommands[i] = strings.TrimLeft(command, CMD_PREFIX)
+	}
+
+	helpText := "commands: " + strings.Join(helpCommands, ", ")
 	cmd.bot.Msg(cmd.conn, channel, helpText)
 }
