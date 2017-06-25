@@ -10,7 +10,7 @@ import (
 const (
 	WOLFRAM_ALPHA_URL = "http://api.wolframalpha.com/v1/result?appid=%s&i=%s"
 
-	WOLFRAM_HELP = "?wolfram <query>"
+	WOLFRAM_HELP = CMD_PREFIX + "wolfram <query>"
 )
 
 type WolframAlphaCommand struct {

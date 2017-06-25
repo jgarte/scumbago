@@ -14,7 +14,7 @@ type HelpCommand struct {
 	line *irc.Line
 }
 
-// Used when just "?help" is given.
+// Used when just "help" is given.
 var COMMANDS = []string{
 	CMD_BEER,
 	CMD_FIGLET,

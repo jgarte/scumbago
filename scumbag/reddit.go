@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	REDDIT_HELP = "?reddit <subreddit>"
+	REDDIT_HELP = CMD_PREFIX + "reddit <subreddit>"
 )
 
 var (

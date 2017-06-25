@@ -11,7 +11,7 @@ import (
 const (
 	ASPELL          = "/usr/bin/aspell"
 	ASPELL_REGEXP   = `\A&\s\w+\s\d+\s\d+:\s(.+)\z`
-	SPELLCHECK_HELP = "?sp <word>"
+	SPELLCHECK_HELP = CMD_PREFIX + "sp <word>"
 )
 
 var (
@@ -31,7 +31,7 @@ func NewSpellcheckCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *Spellch
 	return &SpellcheckCommand{bot: bot, conn: conn, line: line}
 }
 
-// Handler for "?sp <word>"
+// Handler for "<CMD_PREFIX>sp <word>"
 func (cmd *SpellcheckCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {

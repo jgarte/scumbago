@@ -14,7 +14,7 @@ const (
 	SEARCH_LIMIT = 5
 	URL_SEP      = " | "
 
-	URL_HELP = "?url <username> or /<search>/"
+	URL_HELP = CMD_PREFIX + "url <username> or /<search>/"
 )
 
 var (
@@ -41,7 +41,7 @@ func NewLinkCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *LinkCommand {
 	return &LinkCommand{bot: bot, conn: conn, line: line}
 }
 
-// Handler for "?url <nick_or_regex>"
+// Handler for "<CMD_PREFIX>url <nick_or_regex>"
 func (cmd *LinkCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -124,7 +124,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 		return results, err
 	}
 
-	// Regex search:  ?url /imgur/
+	// Regex search:  <CMD_PREFIX>url /imgur/
 	if strings.HasPrefix(query, "/") && strings.HasSuffix(query, "/") {
 		urlQuery := strings.Replace(query, "/", "", 2)
 
@@ -152,7 +152,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 			return nil, err
 		}
 	} else {
-		// Nick search:  ?url oshuma
+		// Nick search:  <CMD_PREFIX>url oshuma
 		cmd.bot.Log.WithField("nick", query).Debug("LinkCommand.SearchLinks(): Nick Search")
 
 		rows, err := cmd.bot.DB.Query(`SELECT nick, url, server, channel FROM links WHERE nick=$1 AND server=$2 AND channel=$3 ORDER BY created_at DESC LIMIT $4;`, query, cmd.conn.Config().Server, channel, SEARCH_LIMIT)

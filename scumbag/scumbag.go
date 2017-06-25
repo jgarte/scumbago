@@ -25,21 +25,23 @@ var BUILD = "HEAD"
 const (
 	CMD_ARG_REGEX = `(\w+)\s{1}\(sp\?\)`
 
-	CMD_ADMIN      = "?admin"
-	CMD_BEER       = "?beer"
-	CMD_FIGLET     = "?fig"
-	CMD_GITHUB     = "?gh"
-	CMD_HELP       = "?help"
-	CMD_REDDIT     = "?reddit"
-	CMD_SPELL      = "?sp"
-	CMD_TRUMP      = "?trump"
-	CMD_TWITTER    = "?twitter"
-	CMD_URBAN_DICT = "?ud"
-	CMD_URL        = "?url"
-	CMD_VERSION    = "?version"
-	CMD_WEATHER    = "?weather"
-	CMD_WIKI       = "?wp"
-	CMD_WOLFRAM    = "?wolfram"
+	CMD_PREFIX = "?"
+
+	CMD_ADMIN      = CMD_PREFIX + "admin"
+	CMD_BEER       = CMD_PREFIX + "beer"
+	CMD_FIGLET     = CMD_PREFIX + "fig"
+	CMD_GITHUB     = CMD_PREFIX + "gh"
+	CMD_HELP       = CMD_PREFIX + "help"
+	CMD_REDDIT     = CMD_PREFIX + "reddit"
+	CMD_SPELL      = CMD_PREFIX + "sp"
+	CMD_TRUMP      = CMD_PREFIX + "trump"
+	CMD_TWITTER    = CMD_PREFIX + "twitter"
+	CMD_URBAN_DICT = CMD_PREFIX + "ud"
+	CMD_URL        = CMD_PREFIX + "url"
+	CMD_VERSION    = CMD_PREFIX + "version"
+	CMD_WEATHER    = CMD_PREFIX + "weather"
+	CMD_WIKI       = CMD_PREFIX + "wp"
+	CMD_WOLFRAM    = CMD_PREFIX + "wolfram"
 
 	// Default config file.
 	CONFIG_FILE = "config/bot.json"
@@ -262,7 +264,7 @@ func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 	go bot.SaveURLs(conn, line)
 	go bot.SpellcheckLine(conn, line)
 
-	// This function handles explicit bot commands ("?url", "?sp", etc)
+	// This function handles explicit bot commands.
 	go bot.processCommands(conn, line)
 }
 

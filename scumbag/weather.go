@@ -13,9 +13,9 @@ const (
 )
 
 var WEATHER_HELP = [...]string{
-	"?weather <location/zip>",
-	"?weather -forecast <location/zip>",
-	"?weather -hourly <location/zip>",
+	CMD_PREFIX + "weather <location/zip>",
+	CMD_PREFIX + "weather -forecast <location/zip>",
+	CMD_PREFIX + "weather -hourly <location/zip>",
 }
 
 type ConditionsResponse struct {

@@ -13,7 +13,7 @@ const (
 	URBAN_DICT_API_URL        = "http://api.urbandictionary.com/v0/define?term=%s&page=1"
 	URBAN_DICT_RANDOM_API_URL = "http://api.urbandictionary.com/v0/random?page=1"
 
-	URBAN_DICT_HELP = "?ud <phrase>"
+	URBAN_DICT_HELP = CMD_PREFIX + "ud <phrase>"
 )
 
 type UrbanDictResult struct {

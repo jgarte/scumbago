@@ -9,7 +9,7 @@ import (
 
 const (
 	GITHUB_USER_EVENTS_URL = "https://api.github.com/users/%s/events"
-	GITHUB_HELP            = "?gh <username>"
+	GITHUB_HELP            = CMD_PREFIX + "gh <username>"
 )
 
 type GithubEvent struct {

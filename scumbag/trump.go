@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	TRUMP_HELP    = "?trump - Returns the latest WTF Trump news."
+	TRUMP_HELP    = CMD_PREFIX + "trump - Returns the latest WTF Trump news."
 	WTF_TRUMP_URL = "https://whatthefuckjusthappenedtoday.com/atom.xml"
 )
 

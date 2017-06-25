@@ -11,7 +11,7 @@ import (
 const (
 	BREWERYDB_URL = "http://api.brewerydb.com/v2/search?type=beer&withBreweries=Y&key=%s&q=%s"
 
-	BEER_HELP = "?beer <query>"
+	BEER_HELP = CMD_PREFIX + "beer <query>"
 )
 
 type BeerCommand struct {

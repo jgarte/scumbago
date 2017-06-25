@@ -10,7 +10,7 @@ import (
 
 const (
 	WIKI_API_URL = "https://en.wikipedia.org/w/api.php?action=opensearch&search=%s&format=json&limit=1&redirects=resolve"
-	WIKI_HELP    = "?wp <phrase>"
+	WIKI_HELP    = CMD_PREFIX + "wp <phrase>"
 )
 
 type WikiResult struct {

@@ -9,7 +9,7 @@ import (
 
 const (
 	FIGLET      = "/usr/bin/figlet"
-	FIGLET_HELP = "?fig <phrase>"
+	FIGLET_HELP = CMD_PREFIX + "fig <phrase>"
 )
 
 type FigletCommand struct {

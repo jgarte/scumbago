@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	TWITTER_HELP = "?twitter <@username> or <search_term>"
+	TWITTER_HELP = CMD_PREFIX + "twitter <@username> or <search_term>"
 )
 
 type TwitterCommand struct {
