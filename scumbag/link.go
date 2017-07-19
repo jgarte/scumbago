@@ -11,24 +11,26 @@ import (
 )
 
 const (
-	SEARCH_LIMIT = 5
-	URL_SEP      = " | "
+	searchLimit = 5
+	urlSep      = " | "
 
-	URL_HELP = CMD_PREFIX + "url <username> or /<search>/"
+	urlHelp = cmdPrefix + "url <username> or /<search>/"
 )
 
 var (
 	urlRegexp = regexp.MustCompile(`((ftp|git|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(?:\/|\/([\w#!:.?+=&%@!\-\/]))?)`)
 )
 
+// Link represents a saved URL link.
 type Link struct {
 	Nick      string
-	Url       string
+	URL       string
 	Server    string
 	Channel   string
 	CreatedAt time.Time
 }
 
+// LinkCommand interacts with the databased-saved URL links.
 type LinkCommand struct {
 	BaseCommand
 
@@ -37,11 +39,12 @@ type LinkCommand struct {
 	line *irc.Line
 }
 
+// NewLinkCommand returns a new LinkCommand instance.
 func NewLinkCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *LinkCommand {
 	return &LinkCommand{bot: bot, conn: conn, line: line}
 }
 
-// Handler for "<CMD_PREFIX>url <nick_or_regex>"
+// Run is the command handler for "<cmdPrefix>url <nick_or_regex>"
 func (cmd *LinkCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -63,12 +66,13 @@ func (cmd *LinkCommand) Run(args ...string) {
 
 	response := make([]string, len(links))
 	for i, link := range links {
-		response[i] = link.Url
+		response[i] = link.URL
 	}
 
-	cmd.bot.Msg(cmd.conn, channel, strings.Join(response, URL_SEP))
+	cmd.bot.Msg(cmd.conn, channel, strings.Join(response, urlSep))
 }
 
+// Help shows the command help.
 func (cmd *LinkCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -76,10 +80,10 @@ func (cmd *LinkCommand) Help() {
 		return
 	}
 
-	cmd.bot.Msg(cmd.conn, channel, URL_HELP)
+	cmd.bot.Msg(cmd.conn, channel, urlHelp)
 }
 
-// Called from a goroutine to save links from `conn.Config().Server` and `line`.
+// SaveURLs is called from a goroutine to save links from `conn.Config().Server` and `line`.
 func (bot *Scumbag) SaveURLs(conn *irc.Conn, line *irc.Line) {
 	link := NewLinkCommand(bot, conn, line)
 	channel, err := link.Channel(line)
@@ -115,6 +119,7 @@ func (bot *Scumbag) SaveURLs(conn *irc.Conn, line *irc.Line) {
 	}
 }
 
+// SearchLinks searches the links database for query.
 func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 	var results []*Link
 
@@ -124,11 +129,11 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 		return results, err
 	}
 
-	// Regex search:  <CMD_PREFIX>url /imgur/
+	// Regex search:  <cmdPrefix>url /imgur/
 	if strings.HasPrefix(query, "/") && strings.HasSuffix(query, "/") {
 		urlQuery := strings.Replace(query, "/", "", 2)
 
-		rows, err := cmd.bot.DB.Query(`SELECT nick, url, server, channel FROM links WHERE url ILIKE '%' || $1 || '%' AND server=$2 AND channel=$3 ORDER BY created_at DESC LIMIT $4;`, urlQuery, cmd.conn.Config().Server, channel, SEARCH_LIMIT)
+		rows, err := cmd.bot.DB.Query(`SELECT nick, url, server, channel FROM links WHERE url ILIKE '%' || $1 || '%' AND server=$2 AND channel=$3 ORDER BY created_at DESC LIMIT $4;`, urlQuery, cmd.conn.Config().Server, channel, searchLimit)
 		if err != nil {
 			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 			return nil, err
@@ -137,7 +142,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 
 		for rows.Next() {
 			link := Link{}
-			err := rows.Scan(&link.Nick, &link.Url, &link.Server, &link.Channel)
+			err := rows.Scan(&link.Nick, &link.URL, &link.Server, &link.Channel)
 			if err != nil {
 				cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 				return nil, err
@@ -152,10 +157,10 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 			return nil, err
 		}
 	} else {
-		// Nick search:  <CMD_PREFIX>url oshuma
+		// Nick search:  <cmdPrefix>url oshuma
 		cmd.bot.Log.WithField("nick", query).Debug("LinkCommand.SearchLinks(): Nick Search")
 
-		rows, err := cmd.bot.DB.Query(`SELECT nick, url, server, channel FROM links WHERE nick=$1 AND server=$2 AND channel=$3 ORDER BY created_at DESC LIMIT $4;`, query, cmd.conn.Config().Server, channel, SEARCH_LIMIT)
+		rows, err := cmd.bot.DB.Query(`SELECT nick, url, server, channel FROM links WHERE nick=$1 AND server=$2 AND channel=$3 ORDER BY created_at DESC LIMIT $4;`, query, cmd.conn.Config().Server, channel, searchLimit)
 		if err != nil {
 			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 			return nil, err
@@ -164,7 +169,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 
 		for rows.Next() {
 			link := Link{}
-			err := rows.Scan(&link.Nick, &link.Url, &link.Server, &link.Channel)
+			err := rows.Scan(&link.Nick, &link.URL, &link.Server, &link.Channel)
 			if err != nil {
 				cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
 				return nil, err

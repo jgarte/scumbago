@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	WIKI_API_URL = "https://en.wikipedia.org/w/api.php?action=opensearch&search=%s&format=json&limit=1&redirects=resolve"
-	WIKI_HELP    = CMD_PREFIX + "wp <phrase>"
+	wikiAPIURL = "https://en.wikipedia.org/w/api.php?action=opensearch&search=%s&format=json&limit=1&redirects=resolve"
+	wikiHelp   = cmdPrefix + "wp <phrase>"
 )
 
+// WikiResult stores data returned from the API.
 type WikiResult struct {
 	Query   string
 	Title   []string
@@ -20,6 +21,7 @@ type WikiResult struct {
 	URL     []string
 }
 
+// WikiCommand interacts with the Wikipedia API.
 type WikiCommand struct {
 	BaseCommand
 
@@ -28,10 +30,12 @@ type WikiCommand struct {
 	line *irc.Line
 }
 
+// NewWikiCommand returns a new WikiCommand instance.
 func NewWikiCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *WikiCommand {
 	return &WikiCommand{bot: bot, conn: conn, line: line}
 }
 
+// Run runs the command.
 func (cmd *WikiCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -46,9 +50,9 @@ func (cmd *WikiCommand) Run(args ...string) {
 	}
 
 	encodedQuery := strings.Replace(query, " ", "%20", -1)
-	requestUrl := fmt.Sprintf(WIKI_API_URL, encodedQuery)
+	requestURL := fmt.Sprintf(wikiAPIURL, encodedQuery)
 
-	content, err := getContent(requestUrl)
+	content, err := getContent(requestURL)
 	if err != nil {
 		cmd.bot.Log.WithField("error", err).Error("WikiCommand.Run()")
 		return
@@ -72,6 +76,7 @@ func (cmd *WikiCommand) Run(args ...string) {
 	}
 }
 
+// Help displays the command help.
 func (cmd *WikiCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -79,5 +84,5 @@ func (cmd *WikiCommand) Help() {
 		return
 	}
 
-	cmd.bot.Msg(cmd.conn, channel, WIKI_HELP)
+	cmd.bot.Msg(cmd.conn, channel, wikiHelp)
 }

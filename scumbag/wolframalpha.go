@@ -8,11 +8,12 @@ import (
 )
 
 const (
-	WOLFRAM_ALPHA_URL = "http://api.wolframalpha.com/v1/result?appid=%s&i=%s"
+	wolframAPIURL = "http://api.wolframalpha.com/v1/result?appid=%s&i=%s"
 
-	WOLFRAM_HELP = CMD_PREFIX + "wolfram <query>"
+	wolframHelp = cmdPrefix + "wolfram <query>"
 )
 
+// WolframAlphaCommand interacts with the Wolfram Alpha API.
 type WolframAlphaCommand struct {
 	BaseCommand
 
@@ -21,14 +22,16 @@ type WolframAlphaCommand struct {
 	line *irc.Line
 }
 
+// NewWolframAlphaCommand returns a new WolframAlphaCommand instance.
 func NewWolframAlphaCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *WolframAlphaCommand {
 	return &WolframAlphaCommand{bot: bot, conn: conn, line: line}
 }
 
+// Run runs the command.
 func (cmd *WolframAlphaCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.currentConditions()")
+		cmd.bot.Log.WithField("err", err).Error("WolframAlphaCommand.Run()")
 		return
 	}
 
@@ -40,9 +43,9 @@ func (cmd *WolframAlphaCommand) Run(args ...string) {
 	}
 	query = url.QueryEscape(query)
 
-	requestUrl := fmt.Sprintf(WOLFRAM_ALPHA_URL, cmd.bot.Config.WolframAlpha.AppID, query)
+	requestURL := fmt.Sprintf(wolframAPIURL, cmd.bot.Config.WolframAlpha.AppID, query)
 
-	content, err := getContent(requestUrl)
+	content, err := getContent(requestURL)
 	if err != nil {
 		cmd.bot.Log.WithField("error", err).Error("WolframAlphaCommand.Run()")
 		return
@@ -51,6 +54,7 @@ func (cmd *WolframAlphaCommand) Run(args ...string) {
 	cmd.bot.Msg(cmd.conn, channel, string(content[:]))
 }
 
+// Help displays the command help.
 func (cmd *WolframAlphaCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -58,5 +62,5 @@ func (cmd *WolframAlphaCommand) Help() {
 		return
 	}
 
-	cmd.bot.Msg(cmd.conn, channel, WOLFRAM_HELP)
+	cmd.bot.Msg(cmd.conn, channel, wolframHelp)
 }

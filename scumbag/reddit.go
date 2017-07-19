@@ -12,13 +12,14 @@ import (
 )
 
 const (
-	REDDIT_HELP = CMD_PREFIX + "reddit <subreddit>"
+	redditHelp = cmdPrefix + "reddit <subreddit>"
 )
 
 var (
 	selfPostRegexp = regexp.MustCompile(`\Aself\.`)
 )
 
+// RedditCommand interacts with the Reddit API.
 type RedditCommand struct {
 	BaseCommand
 
@@ -27,10 +28,12 @@ type RedditCommand struct {
 	line *irc.Line
 }
 
+// NewRedditCommand returns a new RedditCommand instance.
 func NewRedditCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *RedditCommand {
 	return &RedditCommand{bot: bot, conn: conn, line: line}
 }
 
+// Run runs the command.
 func (cmd *RedditCommand) Run(args ...string) {
 	if len(args) <= 0 {
 		cmd.bot.Log.WithField("args", args).Debug("RedditCommand.Run(): No args")
@@ -57,6 +60,7 @@ func (cmd *RedditCommand) Run(args ...string) {
 	}
 }
 
+// Help shows the command help.
 func (cmd *RedditCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -64,7 +68,7 @@ func (cmd *RedditCommand) Help() {
 		return
 	}
 
-	cmd.bot.Msg(cmd.conn, channel, REDDIT_HELP)
+	cmd.bot.Msg(cmd.conn, channel, redditHelp)
 }
 
 func (cmd *RedditCommand) getLatestSubmission(submissions []*geddit.Submission) (*geddit.Submission, error) {

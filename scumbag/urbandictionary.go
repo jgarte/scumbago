@@ -10,12 +10,13 @@ import (
 )
 
 const (
-	URBAN_DICT_API_URL        = "http://api.urbandictionary.com/v0/define?term=%s&page=1"
-	URBAN_DICT_RANDOM_API_URL = "http://api.urbandictionary.com/v0/random?page=1"
+	urbanDictAPIURL       = "http://api.urbandictionary.com/v0/define?term=%s&page=1"
+	urbanDictRandomAPIURL = "http://api.urbandictionary.com/v0/random?page=1"
 
-	URBAN_DICT_HELP = CMD_PREFIX + "ud <phrase>"
+	urbanDictHelp = cmdPrefix + "ud <phrase>"
 )
 
+// UrbanDictResult stores a UrbanDictionary API response.
 type UrbanDictResult struct {
 	Definitions []Definition `json:"list"`
 	ResultType  string       `json:"result_type"`
@@ -23,10 +24,11 @@ type UrbanDictResult struct {
 	Tags        []string     `json:"tags"`
 }
 
+// Definition is a word's definition.
 type Definition struct {
 	Author       string `json:"author"`
 	CurrentVote  string `json:"current_vote"`
-	DefinitionId int64  `json:"defid"`
+	DefinitionID int64  `json:"defid"`
 	Definition   string `json:"definition"`
 	Example      string `json:"example"`
 	Permalink    string `json:"permalink"`
@@ -35,13 +37,14 @@ type Definition struct {
 	Word         string `json:"word"`
 }
 
-// Used to sort definitions by 'ThumbsUp' value.
+// ByThumbsUp is used to sort definitions by 'ThumbsUp' value.
 type ByThumbsUp []Definition
 
 func (a ByThumbsUp) Len() int           { return len(a) }
 func (a ByThumbsUp) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByThumbsUp) Less(i, j int) bool { return a[i].ThumbsUp > a[j].ThumbsUp }
 
+// UrbanDictionaryCommand interacts with the UrbanDictionary API.
 type UrbanDictionaryCommand struct {
 	BaseCommand
 
@@ -50,10 +53,12 @@ type UrbanDictionaryCommand struct {
 	line *irc.Line
 }
 
+// NewUrbanDictionaryCommand returns a new UrbanDictionaryCommand instance.
 func NewUrbanDictionaryCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *UrbanDictionaryCommand {
 	return &UrbanDictionaryCommand{bot: bot, conn: conn, line: line}
 }
 
+// Run runs the command.
 func (cmd *UrbanDictionaryCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -61,18 +66,18 @@ func (cmd *UrbanDictionaryCommand) Run(args ...string) {
 		return
 	}
 
-	var requestUrl string
+	var requestURL string
 
 	query := args[0]
 
 	if query == "" || query == "-random" {
-		requestUrl = URBAN_DICT_RANDOM_API_URL
+		requestURL = urbanDictRandomAPIURL
 	} else {
 		encodedQuery := strings.Replace(query, " ", "%20", -1)
-		requestUrl = fmt.Sprintf(URBAN_DICT_API_URL, encodedQuery)
+		requestURL = fmt.Sprintf(urbanDictAPIURL, encodedQuery)
 	}
 
-	content, err := getContent(requestUrl)
+	content, err := getContent(requestURL)
 	if err != nil {
 		cmd.bot.Log.WithField("error", err).Error("UrbanDictionaryCommand.Run()")
 		return
@@ -102,6 +107,7 @@ func (cmd *UrbanDictionaryCommand) Run(args ...string) {
 	}
 }
 
+// Help displays the command help.
 func (cmd *UrbanDictionaryCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -109,5 +115,5 @@ func (cmd *UrbanDictionaryCommand) Help() {
 		return
 	}
 
-	cmd.bot.Msg(cmd.conn, channel, URBAN_DICT_HELP)
+	cmd.bot.Msg(cmd.conn, channel, urbanDictHelp)
 }

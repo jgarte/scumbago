@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	TWITTER_HELP = CMD_PREFIX + "twitter <@username> or <search_term>"
+	twitterHelp = cmdPrefix + "twitter <@username> or <search_term>"
 )
 
+// TwitterCommand interacts with the Twitter API.
 type TwitterCommand struct {
 	BaseCommand
 
@@ -20,10 +21,12 @@ type TwitterCommand struct {
 	line *irc.Line
 }
 
+// NewTwitterCommand returns a new TwitterCommand instance.
 func NewTwitterCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *TwitterCommand {
 	return &TwitterCommand{bot: bot, conn: conn, line: line}
 }
 
+// Run runs the command.
 func (cmd *TwitterCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -66,6 +69,7 @@ func (cmd *TwitterCommand) Run(args ...string) {
 	}
 }
 
+// Help displays the command help.
 func (cmd *TwitterCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -73,7 +77,7 @@ func (cmd *TwitterCommand) Help() {
 		return
 	}
 
-	cmd.bot.Msg(cmd.conn, channel, TWITTER_HELP)
+	cmd.bot.Msg(cmd.conn, channel, twitterHelp)
 }
 
 func (cmd *TwitterCommand) screennameStatus(query string) (*twitter.User, bool) {
@@ -90,9 +94,9 @@ func (cmd *TwitterCommand) screennameStatus(query string) (*twitter.User, bool) 
 	if user.Protected {
 		cmd.bot.Log.WithField("user", user).Debug("TwitterCommand.screennameStatus(): User account is protected.")
 		return user, true
-	} else {
-		return user, false
 	}
+
+	return user, false
 }
 
 func (cmd *TwitterCommand) searchTwitter(query string) *twitter.Tweet {

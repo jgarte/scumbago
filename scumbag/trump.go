@@ -12,10 +12,11 @@ import (
 )
 
 const (
-	TRUMP_HELP    = CMD_PREFIX + "trump - Returns the latest WTF Trump news."
-	WTF_TRUMP_URL = "https://whatthefuckjusthappenedtoday.com/atom.xml"
+	trumpHelp   = cmdPrefix + "trump - Returns the latest WTF Trump news."
+	wtfTrumpURL = "https://whatthefuckjusthappenedtoday.com/atom.xml"
 )
 
+// TrumpCommand interacts with the (boring and I'm fucking tired of hearing about it) WTFTrump API.
 type TrumpCommand struct {
 	BaseCommand
 
@@ -24,10 +25,12 @@ type TrumpCommand struct {
 	line *irc.Line
 }
 
+// NewTrumpCommand returns a new TrumpCommand instance.
 func NewTrumpCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *TrumpCommand {
 	return &TrumpCommand{bot: bot, conn: conn, line: line}
 }
 
+// Run runs the command.
 func (cmd *TrumpCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -35,7 +38,7 @@ func (cmd *TrumpCommand) Run(args ...string) {
 		return
 	}
 
-	response, err := http.Get(WTF_TRUMP_URL)
+	response, err := http.Get(wtfTrumpURL)
 	if err != nil {
 		cmd.bot.Log.WithField("error", err).Error("TrumpCommand.Run()")
 		return
@@ -68,6 +71,7 @@ func (cmd *TrumpCommand) Run(args ...string) {
 	}
 }
 
+// Help displays the command help.
 func (cmd *TrumpCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -75,5 +79,5 @@ func (cmd *TrumpCommand) Help() {
 		return
 	}
 
-	cmd.bot.Msg(cmd.conn, channel, TRUMP_HELP)
+	cmd.bot.Msg(cmd.conn, channel, trumpHelp)
 }

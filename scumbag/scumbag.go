@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"database/sql"
+	// Don't need a named import for a database driver.
 	_ "github.com/lib/pq"
 
 	log "github.com/Sirupsen/logrus"
@@ -19,41 +20,46 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var VERSION = "1.2.0"
-var BUILD = "HEAD"
+// Version is a rarely updated string...
+var Version = "1.2.0"
+
+// BuildTag is updated from the current git SHA when the Docker image is pushed.
+var BuildTag = "HEAD"
 
 const (
-	CMD_ARG_REGEX = `(\w+)\s{1}\(sp\?\)`
+	cmdArgRegex = `(\w+)\s{1}\(sp\?\)`
 
-	CMD_PREFIX = "?"
+	cmdPrefix = "?"
 
-	CMD_ADMIN      = CMD_PREFIX + "admin"
-	CMD_BEER       = CMD_PREFIX + "beer"
-	CMD_FIGLET     = CMD_PREFIX + "fig"
-	CMD_GITHUB     = CMD_PREFIX + "gh"
-	CMD_HELP       = CMD_PREFIX + "help"
-	CMD_REDDIT     = CMD_PREFIX + "reddit"
-	CMD_SPELL      = CMD_PREFIX + "sp"
-	CMD_TRUMP      = CMD_PREFIX + "trump"
-	CMD_TWITTER    = CMD_PREFIX + "twitter"
-	CMD_URBAN_DICT = CMD_PREFIX + "ud"
-	CMD_URL        = CMD_PREFIX + "url"
-	CMD_VERSION    = CMD_PREFIX + "version"
-	CMD_WEATHER    = CMD_PREFIX + "weather"
-	CMD_WIKI       = CMD_PREFIX + "wp"
-	CMD_WOLFRAM    = CMD_PREFIX + "wolfram"
+	cmdAdmin     = cmdPrefix + "admin"
+	cmdBeer      = cmdPrefix + "beer"
+	cmdFiglet    = cmdPrefix + "fig"
+	cmdGithub    = cmdPrefix + "gh"
+	cmdHelp      = cmdPrefix + "help"
+	cmdReddit    = cmdPrefix + "reddit"
+	cmdSpell     = cmdPrefix + "sp"
+	cmdTrump     = cmdPrefix + "trump"
+	cmdTwitter   = cmdPrefix + "twitter"
+	cmdUrbanDict = cmdPrefix + "ud"
+	cmdURL       = cmdPrefix + "url"
+	cmdVersion   = cmdPrefix + "version"
+	cmdWeather   = cmdPrefix + "weather"
+	cmdWiki      = cmdPrefix + "wp"
+	cmdWolfram   = cmdPrefix + "wolfram"
 
-	// Default config file.
-	CONFIG_FILE = "config/bot.json"
+	// ConfigFile is the path to the default config file.
+	ConfigFile = "config/bot.json"
 
-	// Default log file.
-	LOG_FILE = "log/scumbag.log"
+	// LogFile is the path to the default log file.
+	LogFile = "log/scumbag.log"
 )
 
-func Version() string {
-	return fmt.Sprintf("scumbag v%s-%s", VERSION, BUILD)
+// VersionString returns a formatted version string.
+func VersionString() string {
+	return fmt.Sprintf("scumbag v%s-%s", Version, BuildTag)
 }
 
+// Scumbag is the main bot struct.
 type Scumbag struct {
 	Config  *BotConfig
 	DB      *sql.DB
@@ -65,6 +71,7 @@ type Scumbag struct {
 	disconnected map[string]chan struct{}
 }
 
+// NewBot returns a new Scumbag instance.
 func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
 	botConfig, err := LoadConfig(configFile)
 	if err != nil {
@@ -92,6 +99,7 @@ func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
 	return bot, nil
 }
 
+// Start connects the bot to the configured IRC servers.
 func (bot *Scumbag) Start() error {
 	bot.Log.Info("Starting.")
 
@@ -105,6 +113,7 @@ func (bot *Scumbag) Start() error {
 	return nil
 }
 
+// Wait keeps the bot running until a disconnect is received.
 func (bot *Scumbag) Wait() {
 	bot.Log.Debug("Waiting...")
 	for _, ch := range bot.disconnected {
@@ -112,6 +121,7 @@ func (bot *Scumbag) Wait() {
 	}
 }
 
+// Shutdown sanely shuts down the bot.
 func (bot *Scumbag) Shutdown() {
 	bot.Log.Info("Shutting down.")
 
@@ -123,6 +133,7 @@ func (bot *Scumbag) Shutdown() {
 	bot.DB.Close()
 }
 
+// Admin returns true if the given nick string is an admin.
 func (bot *Scumbag) Admin(nick string) bool {
 	for _, n := range bot.Config.Admins {
 		if n == nick {
@@ -133,9 +144,9 @@ func (bot *Scumbag) Admin(nick string) bool {
 	return false
 }
 
-// Sends a PRIVMSG to `channel_or_nick` on `conn.Config().Server`'s client.
-func (bot *Scumbag) Msg(conn *irc.Conn, channel_or_nick string, message string) {
-	bot.ircClients[conn.Config().Server].Privmsg(channel_or_nick, message)
+// Msg sends a PRIVMSG to `channel_or_nick` on `conn.Config().Server`'s client.
+func (bot *Scumbag) Msg(conn *irc.Conn, channelOrNick string, message string) {
+	bot.ircClients[conn.Config().Server].Privmsg(channelOrNick, message)
 }
 
 func (bot *Scumbag) setupLogger(logFilename *string) error {
@@ -186,7 +197,7 @@ func (bot *Scumbag) setupDatabase() error {
 func (bot *Scumbag) setupRedditSession() {
 	bot.Log.Debug("setupRedditSession()")
 
-	bot.Reddit = geddit.NewSession(Version())
+	bot.Reddit = geddit.NewSession(VersionString())
 }
 
 func (bot *Scumbag) setupTwitterClient() {
@@ -286,35 +297,35 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 
 	var command Command
 	switch commandName {
-	case CMD_ADMIN:
+	case cmdAdmin:
 		command = NewAdminCommand(bot, conn, line)
-	case CMD_BEER:
+	case cmdBeer:
 		command = NewBeerCommand(bot, conn, line)
-	case CMD_FIGLET:
+	case cmdFiglet:
 		command = NewFigletCommand(bot, conn, line)
-	case CMD_GITHUB:
+	case cmdGithub:
 		command = NewGithubCommand(bot, conn, line)
-	case CMD_HELP:
+	case cmdHelp:
 		command = NewHelpCommand(bot, conn, line)
-	case CMD_REDDIT:
+	case cmdReddit:
 		command = NewRedditCommand(bot, conn, line)
-	case CMD_SPELL:
+	case cmdSpell:
 		command = NewSpellcheckCommand(bot, conn, line)
-	case CMD_TRUMP:
+	case cmdTrump:
 		command = NewTrumpCommand(bot, conn, line)
-	case CMD_TWITTER:
+	case cmdTwitter:
 		command = NewTwitterCommand(bot, conn, line)
-	case CMD_URBAN_DICT:
+	case cmdUrbanDict:
 		command = NewUrbanDictionaryCommand(bot, conn, line)
-	case CMD_URL:
+	case cmdURL:
 		command = NewLinkCommand(bot, conn, line)
-	case CMD_VERSION:
+	case cmdVersion:
 		command = NewVersionCommand(bot, conn, line)
-	case CMD_WEATHER:
+	case cmdWeather:
 		command = NewWeatherCommand(bot, conn, line)
-	case CMD_WIKI:
+	case cmdWiki:
 		command = NewWikiCommand(bot, conn, line)
-	case CMD_WOLFRAM:
+	case cmdWolfram:
 		command = NewWolframAlphaCommand(bot, conn, line)
 	}
 
@@ -323,8 +334,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 	}
 }
 
-func getContent(requestUrl string) ([]byte, error) {
-	response, err := http.Get(requestUrl)
+func getContent(requestURL string) ([]byte, error) {
+	response, err := http.Get(requestURL)
 	if err != nil {
 		return nil, err
 	}

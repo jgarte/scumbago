@@ -2,11 +2,11 @@ package scumbag
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 )
 
+// BotConfig contains the overall bot configuration.
 type BotConfig struct {
 	Servers            []*ServerConfig
 	Admins             []string
@@ -18,6 +18,7 @@ type BotConfig struct {
 	WolframAlpha       *WolframAlphaConfig
 }
 
+// ServerConfig stores IRC connection information.
 type ServerConfig struct {
 	Name     string
 	Server   string
@@ -25,6 +26,7 @@ type ServerConfig struct {
 	Channels []string
 }
 
+// DatabaseConfig stores database connection information.
 type DatabaseConfig struct {
 	Host     string
 	SSL      string
@@ -33,22 +35,27 @@ type DatabaseConfig struct {
 	Password string
 }
 
+// BreweryDBConfig stores BreweryDB API information.
 type BreweryDBConfig struct {
 	Key string
 }
 
+// TwitterConfig stores Twitter API information.
 type TwitterConfig struct {
 	AccessToken string
 }
 
+// WeatherUndergroundConfig stores Weather Underground API information.
 type WeatherUndergroundConfig struct {
 	Key string
 }
 
+// WolframAlphaConfig stores Wolfram Alpha API information.
 type WolframAlphaConfig struct {
 	AppID string
 }
 
+// LoadConfig loads the configFile.
 func LoadConfig(configFile *string) (*BotConfig, error) {
 	var botConfig BotConfig
 
@@ -66,6 +73,7 @@ func LoadConfig(configFile *string) (*BotConfig, error) {
 	return &botConfig, nil
 }
 
+// Server returns the server config.
 func (config *BotConfig) Server(server string) (*ServerConfig, error) {
 	for _, serverConfig := range config.Servers {
 		if serverConfig.Server == server {
@@ -73,5 +81,5 @@ func (config *BotConfig) Server(server string) (*ServerConfig, error) {
 		}
 	}
 
-	return nil, errors.New(fmt.Sprintf("Unknown server: %s", server))
+	return nil, fmt.Errorf("Unknown server: %s", server)
 }

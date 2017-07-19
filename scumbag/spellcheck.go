@@ -9,16 +9,17 @@ import (
 )
 
 const (
-	ASPELL          = "/usr/bin/aspell"
-	ASPELL_REGEXP   = `\A&\s\w+\s\d+\s\d+:\s(.+)\z`
-	SPELLCHECK_HELP = CMD_PREFIX + "sp <word>"
+	aspellPath      = "/usr/bin/aspell"
+	aspellRegexpRaw = `\A&\s\w+\s\d+\s\d+:\s(.+)\z`
+	spellcheckHelp  = cmdPrefix + "sp <word>"
 )
 
 var (
-	aspellRegexp = regexp.MustCompile(ASPELL_REGEXP)
-	wordRegexp   = regexp.MustCompile(CMD_ARG_REGEX)
+	aspellRegexp = regexp.MustCompile(aspellRegexpRaw)
+	wordRegexp   = regexp.MustCompile(cmdArgRegex)
 )
 
+// SpellcheckCommand handles different types of spellcheck.
 type SpellcheckCommand struct {
 	BaseCommand
 
@@ -27,11 +28,12 @@ type SpellcheckCommand struct {
 	line *irc.Line
 }
 
+// NewSpellcheckCommand returns a new SpellcheckCommand instance.
 func NewSpellcheckCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *SpellcheckCommand {
 	return &SpellcheckCommand{bot: bot, conn: conn, line: line}
 }
 
-// Handler for "<CMD_PREFIX>sp <word>"
+// Run is the handler for "<cmdPrefix><cmdSpell> <word>"
 func (cmd *SpellcheckCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -59,6 +61,7 @@ func (cmd *SpellcheckCommand) Run(args ...string) {
 	cmd.bot.Msg(cmd.conn, channel, response)
 }
 
+// Help displays the command help.
 func (cmd *SpellcheckCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -66,10 +69,10 @@ func (cmd *SpellcheckCommand) Help() {
 		return
 	}
 
-	cmd.bot.Msg(cmd.conn, channel, SPELLCHECK_HELP)
+	cmd.bot.Msg(cmd.conn, channel, spellcheckHelp)
 }
 
-// Called from a goroutine to search for text like "some word (sp?) to spellcheck"
+// SpellcheckLine is called from a goroutine to search for text like "some word (sp?) to spellcheck"
 func (bot *Scumbag) SpellcheckLine(conn *irc.Conn, line *irc.Line) {
 	if len(line.Args) <= 0 {
 		return
@@ -94,9 +97,10 @@ func (bot *Scumbag) SpellcheckLine(conn *irc.Conn, line *irc.Line) {
 	}
 }
 
+// Spellcheck checks the word for spelling errors and returns the result.
 func (cmd *SpellcheckCommand) Spellcheck(word string) (string, error) {
 	echo := exec.Command("echo", word)
-	aspell := exec.Command(ASPELL, "pipe")
+	aspell := exec.Command(aspellPath, "pipe")
 
 	echoOut, err := echo.StdoutPipe()
 	if err != nil {
@@ -120,9 +124,9 @@ func (cmd *SpellcheckCommand) Spellcheck(word string) (string, error) {
 	spellMatch := aspellRegexp.FindStringSubmatch(line)
 	if len(spellMatch) > 0 {
 		return spellMatch[1], nil
-	} else {
-		return "GJ U CAN SPELL", nil
 	}
+
+	return "GJ U CAN SPELL", nil
 }
 
 func (cmd *SpellcheckCommand) getWordFromLine(line *irc.Line) (string, bool) {
@@ -130,7 +134,7 @@ func (cmd *SpellcheckCommand) getWordFromLine(line *irc.Line) (string, bool) {
 	match := wordRegexp.FindStringSubmatch(msg)
 	if len(match) > 0 {
 		return match[1], true
-	} else {
-		return "", false
 	}
+
+	return "", false
 }

@@ -7,9 +7,10 @@ import (
 )
 
 const (
-	CMD_NICK = "nick"
+	cmdNick = "nick"
 )
 
+// AdminCommand handles bot admin.
 type AdminCommand struct {
 	BaseCommand
 
@@ -18,10 +19,12 @@ type AdminCommand struct {
 	line *irc.Line
 }
 
+// NewAdminCommand returns a new AdminCommand instance.
 func NewAdminCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *AdminCommand {
 	return &AdminCommand{bot: bot, conn: conn, line: line}
 }
 
+// Run runs the command.
 func (cmd *AdminCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -46,7 +49,7 @@ func (cmd *AdminCommand) Run(args ...string) {
 		commandArgs := strings.Join(fields[1:], " ")
 
 		switch command {
-		case CMD_NICK:
+		case cmdNick:
 			client := cmd.bot.ircClients[cmd.conn.Config().Server]
 			client.Nick(commandArgs)
 		}

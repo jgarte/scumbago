@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	FIGLET      = "/usr/bin/figlet"
-	FIGLET_HELP = CMD_PREFIX + "fig <phrase>"
+	figletPath = "/usr/bin/figlet"
+	figletHelp = cmdPrefix + "fig <phrase>"
 )
 
+// FigletCommand interacts with the figlet command.
 type FigletCommand struct {
 	BaseCommand
 
@@ -20,10 +21,12 @@ type FigletCommand struct {
 	line *irc.Line
 }
 
+// NewFigletCommand returns a new FigletCommand instance.
 func NewFigletCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *FigletCommand {
 	return &FigletCommand{bot: bot, conn: conn, line: line}
 }
 
+// Run runs the command.
 func (cmd *FigletCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -42,7 +45,7 @@ func (cmd *FigletCommand) Run(args ...string) {
 		return
 	}
 
-	if output, err := exec.Command(FIGLET, phrase).Output(); err != nil {
+	if output, err := exec.Command(figletPath, phrase).Output(); err != nil {
 		cmd.bot.Log.WithField("error", err).Error("FigletCommand.Run()")
 	} else {
 		for _, line := range strings.Split(string(output), "\n") {
@@ -51,6 +54,7 @@ func (cmd *FigletCommand) Run(args ...string) {
 	}
 }
 
+// Help shows the command help.
 func (cmd *FigletCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
@@ -58,5 +62,5 @@ func (cmd *FigletCommand) Help() {
 		return
 	}
 
-	cmd.bot.Msg(cmd.conn, channel, FIGLET_HELP)
+	cmd.bot.Msg(cmd.conn, channel, figletHelp)
 }
