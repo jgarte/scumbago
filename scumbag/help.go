@@ -15,8 +15,7 @@ type HelpCommand struct {
 	line *irc.Line
 }
 
-// COMMANDS is used when just "help" is given.
-var COMMANDS = []string{
+var helpCommands = []string{
 	cmdBeer,
 	cmdFiglet,
 	cmdGithub,
@@ -84,8 +83,8 @@ func (cmd *HelpCommand) Help() {
 	}
 
 	// Strip cmdPrefix from the cmd* constants.
-	helpCommands := make([]string, len(COMMANDS))
-	for i, command := range COMMANDS {
+	helpCommands := make([]string, len(helpCommands))
+	for i, command := range helpCommands {
 		helpCommands[i] = strings.TrimLeft(command, cmdPrefix)
 	}
 
