@@ -27,6 +27,10 @@
     "Key": "brewerydb.com API key"
   },
 
+  "OMDb": {
+    "Key": "your_key"
+  },
+
   "Twitter": {
     "AccessToken": "foo_token"
   },

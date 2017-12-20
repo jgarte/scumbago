@@ -13,6 +13,7 @@ type BotConfig struct {
 	LogLevel           string
 	Database           *DatabaseConfig
 	BreweryDB          *BreweryDBConfig
+	OMDb               *OMDbConfig
 	Twitter            *TwitterConfig
 	WeatherUnderground *WeatherUndergroundConfig
 	WolframAlpha       *WolframAlphaConfig
@@ -37,6 +38,11 @@ type DatabaseConfig struct {
 
 // BreweryDBConfig stores BreweryDB API information.
 type BreweryDBConfig struct {
+	Key string
+}
+
+// OMDbConfig stores the OMDb API information.
+type OMDbConfig struct {
 	Key string
 }
 

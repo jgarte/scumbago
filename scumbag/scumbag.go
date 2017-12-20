@@ -36,6 +36,7 @@ const (
 	cmdFiglet    = cmdPrefix + "fig"
 	cmdGithub    = cmdPrefix + "gh"
 	cmdHelp      = cmdPrefix + "help"
+	cmdMovie     = cmdPrefix + "movie"
 	cmdReddit    = cmdPrefix + "reddit"
 	cmdSpell     = cmdPrefix + "sp"
 	cmdTrump     = cmdPrefix + "trump"
@@ -269,7 +270,7 @@ func (bot *Scumbag) msgHandler(conn *irc.Conn, line *irc.Line) {
 		"line.Time":            line.Time,
 		"line.Nick":            line.Nick,
 		"line.Args":            line.Args,
-	}).Debug("Channel message.")
+	}).Debug("Scumbag.msgHandler(): Channel message.")
 
 	// These functions check the line text and act accordingly.
 	go bot.SaveURLs(conn, line)
@@ -307,6 +308,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewGithubCommand(bot, conn, line)
 	case cmdHelp:
 		command = NewHelpCommand(bot, conn, line)
+	case cmdMovie:
+		command = NewMovieCommand(bot, conn, line)
 	case cmdReddit:
 		command = NewRedditCommand(bot, conn, line)
 	case cmdSpell:
@@ -327,6 +330,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewWikiCommand(bot, conn, line)
 	case cmdWolfram:
 		command = NewWolframAlphaCommand(bot, conn, line)
+	default:
+		bot.Log.WithField("commandName", commandName).Debug("Scumbag.processCommands(): Unknown command")
 	}
 
 	if command != nil {
