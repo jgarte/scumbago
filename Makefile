@@ -3,7 +3,7 @@ BIN=$(BIN_DIR)/scumbago
 BUILD_SHA=$(shell git describe --always --long --dirty)
 
 BUILD_OPTS=-i -v -buildmode exe -o ${BIN}
-LDFLAGS=-ldflags "-X github.com/Oshuma/scumbago/scumbag.BUILD=${BUILD_SHA}"
+LDFLAGS=-ldflags "-X github.com/Oshuma/scumbago/scumbag.BuildTag=${BUILD_SHA}"
 
 .PHONY: all
 all:
