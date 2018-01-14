@@ -96,6 +96,11 @@ func (bot *Scumbag) SaveURLs(conn *irc.Conn, line *irc.Line) {
 	server := conn.Config().Server
 	msg := line.Args[1]
 
+	if ignoredNick(bot, server, nick) {
+		bot.Log.WithFields(log.Fields{"server": server, "nick": nick}).Debug("SaveURLs(): Ignored nick.")
+		return
+	}
+
 	if urls := urlRegexp.FindAllString(msg, -1); urls != nil {
 		for _, url := range urls {
 			var urlMatch string
@@ -186,4 +191,14 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 	}
 
 	return results, nil
+}
+
+func ignoredNick(bot *Scumbag, server, nick string) bool {
+	var result bool
+	err := bot.DB.QueryRow("SELECT EXISTS (SELECT 1 FROM ignored_nicks WHERE server=$1 AND nick=$2);", server, nick).Scan(&result)
+	if err != nil && err != sql.ErrNoRows {
+		bot.Log.WithField("err", err).Error("ignoredNick()")
+		return false
+	}
+	return result
 }

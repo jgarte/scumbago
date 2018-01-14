@@ -1,13 +1,17 @@
 package scumbag
 
 import (
+	"database/sql"
 	"strings"
 
+	log "github.com/Sirupsen/logrus"
 	irc "github.com/fluffle/goirc/client"
 )
 
 const (
-	cmdNick = "nick"
+	cmdIgnore   = "ignore"
+	cmdUnignore = "unignore"
+	cmdNick     = "nick"
 )
 
 // AdminCommand handles bot admin.
@@ -49,11 +53,37 @@ func (cmd *AdminCommand) Run(args ...string) {
 		commandArgs := strings.Join(fields[1:], " ")
 
 		switch command {
+		case cmdIgnore:
+			cmd.ignoreNick(cmd.conn.Config().Server, channel, commandArgs)
+		case cmdUnignore:
+			cmd.unignoreNick(cmd.conn.Config().Server, channel, commandArgs)
 		case cmdNick:
 			client := cmd.bot.ircClients[cmd.conn.Config().Server]
 			client.Nick(commandArgs)
 		}
 	} else {
 		cmd.bot.Log.WithField("args", args).Error("AdminCommand.Run(): Could not get command args")
+	}
+}
+
+func (cmd *AdminCommand) ignoreNick(server, channel, nick string) {
+	var nickMatch string
+	err := cmd.bot.DB.QueryRow("SELECT nick FROM ignored_nicks WHERE server=$1 AND nick=$2;", server, nick).Scan(&nickMatch)
+	if err == sql.ErrNoRows {
+		// New nick ignore; create one.
+		if _, insertErr := cmd.bot.DB.Exec("INSERT INTO ignored_nicks(server, nick, created_at) VALUES($1, $2, $3) RETURNING id;", server, nick, cmd.line.Time); insertErr != nil {
+			cmd.bot.Log.WithFields(log.Fields{"insertErr": insertErr}).Error("AdminCommand.ignoreNick()")
+		} else {
+			cmd.bot.Msg(cmd.conn, channel, "Ignoring: "+nick)
+		}
+	}
+}
+
+func (cmd *AdminCommand) unignoreNick(server, channel, nick string) {
+	_, err := cmd.bot.DB.Exec("DELETE FROM ignored_nicks WHERE server=$1 AND nick=$2;", server, nick)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("AdminCommand.unignoreNick()")
+	} else {
+		cmd.bot.Msg(cmd.conn, channel, "Unignoring: "+nick)
 	}
 }
