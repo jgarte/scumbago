@@ -96,12 +96,12 @@ func (bot *Scumbag) SaveURLs(conn *irc.Conn, line *irc.Line) {
 	server := conn.Config().Server
 	msg := line.Args[1]
 
-	if ignoredNick(bot, server, nick) {
-		bot.Log.WithFields(log.Fields{"server": server, "nick": nick}).Debug("SaveURLs(): Ignored nick.")
-		return
-	}
-
 	if urls := urlRegexp.FindAllString(msg, -1); urls != nil {
+		if ignoredNick(bot, server, nick) {
+			bot.Log.WithFields(log.Fields{"server": server, "nick": nick}).Debug("SaveURLs(): Ignored nick.")
+			return
+		}
+
 		for _, url := range urls {
 			var urlMatch string
 
