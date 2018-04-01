@@ -22,7 +22,6 @@ var helpCommands = []string{
 	cmdHelp,
 	cmdReddit,
 	cmdSpell,
-	cmdTrump,
 	cmdTwitter,
 	cmdUrbanDict,
 	cmdURL,
@@ -55,8 +54,6 @@ func (cmd *HelpCommand) Run(args ...string) {
 		NewRedditCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdSpell, cmdPrefix):
 		NewSpellcheckCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case strings.TrimLeft(cmdTrump, cmdPrefix):
-		NewTrumpCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdTwitter, cmdPrefix):
 		NewTwitterCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdUrbanDict, cmdPrefix):

@@ -39,7 +39,6 @@ const (
 	cmdMovie     = cmdPrefix + "movie"
 	cmdReddit    = cmdPrefix + "reddit"
 	cmdSpell     = cmdPrefix + "sp"
-	cmdTrump     = cmdPrefix + "trump"
 	cmdTwitter   = cmdPrefix + "twitter"
 	cmdUrbanDict = cmdPrefix + "ud"
 	cmdURL       = cmdPrefix + "url"
@@ -314,8 +313,6 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewRedditCommand(bot, conn, line)
 	case cmdSpell:
 		command = NewSpellcheckCommand(bot, conn, line)
-	case cmdTrump:
-		command = NewTrumpCommand(bot, conn, line)
 	case cmdTwitter:
 		command = NewTwitterCommand(bot, conn, line)
 	case cmdUrbanDict:
