@@ -21,7 +21,7 @@ import (
 )
 
 // Version is a rarely updated string...
-var Version = "1.4.2"
+var Version = "1.4.3"
 
 // BuildTag is updated from the current git SHA when the Docker image is pushed.
 var BuildTag = "HEAD"
@@ -104,8 +104,7 @@ func (bot *Scumbag) Start() error {
 	bot.Log.Info("Starting.")
 
 	for _, client := range bot.ircClients {
-		if err := client.Connect(); err != nil {
-			bot.Log.WithFields(log.Fields{"err": err, "client": client}).Error("IRC Connection Error")
+		if err := bot.connectClient(client); err != nil {
 			return err
 		}
 	}
@@ -147,6 +146,14 @@ func (bot *Scumbag) Admin(nick string) bool {
 // Msg sends a PRIVMSG to `channel_or_nick` on `conn.Config().Server`'s client.
 func (bot *Scumbag) Msg(conn *irc.Conn, channelOrNick string, message string) {
 	bot.ircClients[conn.Config().Server].Privmsg(channelOrNick, message)
+}
+
+func (bot *Scumbag) connectClient(client *irc.Conn) error {
+	if err := client.Connect(); err != nil {
+		bot.Log.WithFields(log.Fields{"err": err, "client": client}).Error("IRC Connection Error")
+		return err
+	}
+	return nil
 }
 
 func (bot *Scumbag) setupLogger(logFilename *string) error {
@@ -256,6 +263,13 @@ func (bot *Scumbag) setupHandlers() {
 		client.HandleFunc("DISCONNECTED", func(conn *irc.Conn, line *irc.Line) {
 			bot.Log.WithField("server", conn.Config().Server).Info("Disconnected.")
 			close(bot.disconnected[conn.Config().Server])
+
+			err := bot.connectClient(client)
+			if err != nil {
+				return
+			}
+
+			bot.disconnected[serverConfig.Server] = make(chan struct{})
 		})
 
 		client.HandleFunc("PRIVMSG", bot.msgHandler)
