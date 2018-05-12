@@ -115,10 +115,10 @@ func (bot *Scumbag) Start() error {
 	}
 
 	if len(bot.ircClients) == connectErrors {
-		return errors.New("Could not connect to any servers.")
-	} else {
-		return nil
+		return errors.New("could not connect to any servers")
 	}
+
+	return nil
 }
 
 // Wait keeps the bot running until a disconnect is received.
