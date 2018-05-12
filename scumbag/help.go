@@ -83,11 +83,11 @@ func (cmd *HelpCommand) Help() {
 	}
 
 	// Strip cmdPrefix from the cmd* constants.
-	helpCommands := make([]string, len(helpCommands))
+	help := make([]string, len(helpCommands))
 	for i, command := range helpCommands {
-		helpCommands[i] = strings.TrimLeft(command, cmdPrefix)
+		help[i] = strings.TrimLeft(command, cmdPrefix)
 	}
 
-	helpText := "commands: " + strings.Join(helpCommands, ", ")
+	helpText := "commands: " + strings.Join(help, ", ")
 	cmd.bot.Msg(cmd.conn, channel, helpText)
 }

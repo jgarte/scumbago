@@ -9,6 +9,7 @@ import (
 	irc "github.com/fluffle/goirc/client"
 )
 
+// MovieCommand interacts with the OMDb API.
 type MovieCommand struct {
 	BaseCommand
 
@@ -17,10 +18,12 @@ type MovieCommand struct {
 	line *irc.Line
 }
 
+// MovieSearchResult stores MovieSearchData.
 type MovieSearchResult struct {
 	Search []MovieSearchData `json:"Search"`
 }
 
+// MovieSearchData stores search result data.
 type MovieSearchData struct {
 	Title  string `json:"Title"`
 	Year   string `json:"Year"`
@@ -29,6 +32,7 @@ type MovieSearchData struct {
 	Poster string `json:"Poster"`
 }
 
+// MovieData stores data about a single movie.
 type MovieData struct {
 	Title    string        `json:"Title"`
 	Year     string        `json:"Year"`
@@ -43,6 +47,7 @@ type MovieData struct {
 	Ratings  []RatingsData `json:"Ratings"`
 }
 
+// RatingsData stores rating data about a single movie from a single source.
 type RatingsData struct {
 	Source string `json:"Source"`
 	Value  string `json:"Value"`
@@ -123,6 +128,7 @@ func (cmd *MovieCommand) Run(args ...string) {
 	cmd.bot.Msg(cmd.conn, channel, movieData.Plot)
 }
 
+// Help shows the command help.
 func (cmd *MovieCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
