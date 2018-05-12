@@ -2,6 +2,7 @@ package scumbag
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -103,13 +104,21 @@ func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
 func (bot *Scumbag) Start() error {
 	bot.Log.Info("Starting.")
 
+	// Keeps track of how many servers in bot.ircClients that fail to connect.
+	connectErrors := 0
+
 	for _, client := range bot.ircClients {
 		if err := bot.connectClient(client); err != nil {
-			return err
+			bot.Log.WithFields(log.Fields{"err": err, "client": client}).Error("IRC Connection Error")
+			connectErrors++
 		}
 	}
 
-	return nil
+	if len(bot.ircClients) == connectErrors {
+		return errors.New("Could not connect to any servers.")
+	} else {
+		return nil
+	}
 }
 
 // Wait keeps the bot running until a disconnect is received.
@@ -126,7 +135,11 @@ func (bot *Scumbag) Shutdown() {
 
 	for server, client := range bot.ircClients {
 		bot.Log.WithField("server", server).Debug("Shutdown()")
-		client.Quit("Fuck you. Fuck you. You're cool. I'm out.")
+		if client.Connected() {
+			client.Quit("Fuck you. Fuck you. You're cool. I'm out.")
+		} else {
+			close(bot.disconnected[server])
+		}
 	}
 
 	bot.DB.Close()
@@ -150,7 +163,6 @@ func (bot *Scumbag) Msg(conn *irc.Conn, channelOrNick string, message string) {
 
 func (bot *Scumbag) connectClient(client *irc.Conn) error {
 	if err := client.Connect(); err != nil {
-		bot.Log.WithFields(log.Fields{"err": err, "client": client}).Error("IRC Connection Error")
 		return err
 	}
 	return nil
