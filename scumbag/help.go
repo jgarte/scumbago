@@ -20,11 +20,13 @@ var helpCommands = []string{
 	cmdFiglet,
 	cmdGithub,
 	cmdHelp,
+	cmdMovie,
+	cmdNews,
 	cmdReddit,
 	cmdSpell,
 	cmdTwitter,
-	cmdUrbanDict,
 	cmdURL,
+	cmdUrbanDict,
 	cmdWeather,
 	cmdWiki,
 	cmdWolfram,
@@ -50,6 +52,8 @@ func (cmd *HelpCommand) Run(args ...string) {
 		NewFigletCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdGithub, cmdPrefix):
 		NewGithubCommand(cmd.bot, cmd.conn, cmd.line).Help()
+	case strings.TrimLeft(cmdNews, cmdPrefix):
+		NewNewsCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdReddit, cmdPrefix):
 		NewRedditCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdSpell, cmdPrefix):

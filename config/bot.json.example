@@ -27,8 +27,12 @@
     "Key": "brewerydb.com API key"
   },
 
+  "News": {
+    "Key": "newsapi.org API key"
+  },
+
   "OMDb": {
-    "Key": "your_key"
+    "Key": "omdbapi.com API key"
   },
 
   "Twitter": {
@@ -36,7 +40,7 @@
   },
 
   "WeatherUnderground": {
-    "Key": "foo_key"
+    "Key": "wunderground.com API key"
   },
 
   "WolframAlpha": {

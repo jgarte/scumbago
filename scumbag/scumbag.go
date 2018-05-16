@@ -16,6 +16,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	irc "github.com/fluffle/goirc/client"
 	"github.com/jzelinskie/geddit"
+	newsapi "github.com/kaelanb/newsapi-go"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"golang.org/x/oauth2"
@@ -38,11 +39,12 @@ const (
 	cmdGithub    = cmdPrefix + "gh"
 	cmdHelp      = cmdPrefix + "help"
 	cmdMovie     = cmdPrefix + "movie"
+	cmdNews      = cmdPrefix + "news"
 	cmdReddit    = cmdPrefix + "reddit"
 	cmdSpell     = cmdPrefix + "sp"
 	cmdTwitter   = cmdPrefix + "twitter"
-	cmdUrbanDict = cmdPrefix + "ud"
 	cmdURL       = cmdPrefix + "url"
+	cmdUrbanDict = cmdPrefix + "ud"
 	cmdVersion   = cmdPrefix + "version"
 	cmdWeather   = cmdPrefix + "weather"
 	cmdWiki      = cmdPrefix + "wp"
@@ -65,6 +67,7 @@ type Scumbag struct {
 	Config  *BotConfig
 	DB      *sql.DB
 	Log     *log.Logger
+	News    *newsapi.Client
 	Reddit  *geddit.Session
 	Twitter *twitter.Client
 
@@ -92,6 +95,7 @@ func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
 		return nil, err
 	}
 
+	bot.setupNewsClient()
 	bot.setupRedditSession()
 	bot.setupTwitterClient()
 	bot.setupIrcClients()
@@ -211,6 +215,11 @@ func (bot *Scumbag) setupDatabase() error {
 	bot.DB = session
 
 	return nil
+}
+
+func (bot *Scumbag) setupNewsClient() {
+	bot.Log.Debug("setupNewsClient()")
+	bot.News = newsapi.New(bot.Config.News.Key)
 }
 
 func (bot *Scumbag) setupRedditSession() {
@@ -335,6 +344,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewHelpCommand(bot, conn, line)
 	case cmdMovie:
 		command = NewMovieCommand(bot, conn, line)
+	case cmdNews:
+		command = NewNewsCommand(bot, conn, line)
 	case cmdReddit:
 		command = NewRedditCommand(bot, conn, line)
 	case cmdSpell:

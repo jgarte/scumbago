@@ -13,6 +13,7 @@ type BotConfig struct {
 	LogLevel           string
 	Database           *DatabaseConfig
 	BreweryDB          *BreweryDBConfig
+	News               *NewsConfig
 	OMDb               *OMDbConfig
 	Twitter            *TwitterConfig
 	WeatherUnderground *WeatherUndergroundConfig
@@ -38,6 +39,11 @@ type DatabaseConfig struct {
 
 // BreweryDBConfig stores BreweryDB API information.
 type BreweryDBConfig struct {
+	Key string
+}
+
+// NewsConfig stores News API information.
+type NewsConfig struct {
 	Key string
 }
 
