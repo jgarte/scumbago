@@ -1,6 +1,7 @@
 package scumbag
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -49,14 +50,13 @@ func (cmd *NewsCommand) Run(args ...string) {
 		return
 	}
 
-	topic := args[0]
-	switch topic {
+	switch args[0] {
 	case "":
 		cmd.getTopHeadline()
 	case "-topics":
 		cmd.msg(strings.Join(topics, ", "))
 	default:
-		cmd.getHeadline(topic)
+		cmd.getTopicHeadline(args[0])
 	}
 }
 
@@ -74,41 +74,47 @@ func (cmd *NewsCommand) Help() {
 }
 
 func (cmd *NewsCommand) getTopHeadline() {
-	query := []string{"country=us", "pageSize=1"}
-	newsResponse, err := cmd.bot.News.GetTopHeadlines(query)
+	newsResponse, err := cmd.getNewsResponse()
 	if err != nil {
 		cmd.bot.Log.WithField("err", err).Error("NewsCommand.getTopHeadline")
-		return
-	}
-
-	if len(newsResponse.Articles) <= 0 {
-		cmd.bot.Log.WithField("newsResponse", newsResponse).Error("NewsCommand.getTopHeadline(): No articles.")
 		return
 	}
 
 	cmd.msgArticle(newsResponse.Articles[0])
 }
 
-func (cmd *NewsCommand) getHeadline(topic string) {
+func (cmd *NewsCommand) getTopicHeadline(topic string) {
 	if unknownTopic(topic) {
 		cmd.msg("Unknown topic: " + topic)
 		cmd.msg("Topics: " + strings.Join(topics, ", "))
 		return
 	}
 
-	query := []string{"country=us", "pageSize=1", "category=" + topic}
-	newsResponse, err := cmd.bot.News.GetTopHeadlines(query)
+	newsResponse, err := cmd.getNewsResponse("category=" + topic)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("NewsCommand.getHeadline()")
-		return
-	}
-
-	if len(newsResponse.Articles) <= 0 {
-		cmd.bot.Log.WithField("newsResponse", newsResponse).Error("NewsCommand.getTopHeadline(): No articles.")
+		cmd.bot.Log.WithField("err", err).Error("NewsCommand.getTopHeadline")
 		return
 	}
 
 	cmd.msgArticle(newsResponse.Articles[0])
+}
+
+func (cmd *NewsCommand) getNewsResponse(params ...string) (*newsapi.NewsResponse, error) {
+	query := []string{"country=us", "pageSize=1"}
+	for _, param := range params {
+		query = append(query, param)
+	}
+
+	newsResponse, err := cmd.bot.News.GetTopHeadlines(query)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(newsResponse.Articles) <= 0 {
+		return nil, errors.New("no articles found")
+	}
+
+	return newsResponse, nil
 }
 
 func (cmd *NewsCommand) msgArticle(article newsapi.Article) {
