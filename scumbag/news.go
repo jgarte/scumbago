@@ -13,6 +13,7 @@ var (
 	newsHelp = []string{
 		"Get top headline:   " + cmdPrefix + "news",
 		"Get topic headline: " + cmdPrefix + "news <topic>",
+		"Search headlines:   " + cmdPrefix + "news /query/",
 		"List topics:        " + cmdPrefix + "news -topics",
 	}
 
@@ -50,11 +51,13 @@ func (cmd *NewsCommand) Run(args ...string) {
 		return
 	}
 
-	switch args[0] {
-	case "":
+	switch {
+	case args[0] == "":
 		cmd.getTopHeadline()
-	case "-topics":
+	case args[0] == "-topics":
 		cmd.msg(strings.Join(topics, ", "))
+	case strings.HasPrefix(args[0], "/") && strings.HasSuffix(args[0], "/"):
+		cmd.searchNews(args[0])
 	default:
 		cmd.getTopicHeadline(args[0])
 	}
@@ -91,6 +94,19 @@ func (cmd *NewsCommand) getTopicHeadline(topic string) {
 	}
 
 	newsResponse, err := cmd.getNewsResponse("category=" + topic)
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("NewsCommand.getTopHeadline")
+		return
+	}
+
+	cmd.msgArticle(newsResponse.Articles[0])
+}
+
+func (cmd *NewsCommand) searchNews(arg string) {
+	query := strings.Replace(arg, "/", "", 2)
+
+	// The params are already url.PathEscape'd in the newsapi library, so we don't need to do it here.
+	newsResponse, err := cmd.getNewsResponse("q=" + query)
 	if err != nil {
 		cmd.bot.Log.WithField("err", err).Error("NewsCommand.getTopHeadline")
 		return
