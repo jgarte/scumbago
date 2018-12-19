@@ -13,10 +13,10 @@ import (
 	// Don't need a named import for a database driver.
 	_ "github.com/lib/pq"
 
-	log "github.com/Sirupsen/logrus"
 	irc "github.com/fluffle/goirc/client"
 	"github.com/jzelinskie/geddit"
 	newsapi "github.com/kaelanb/newsapi-go"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"golang.org/x/oauth2"

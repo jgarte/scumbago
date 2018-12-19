@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	irc "github.com/fluffle/goirc/client"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
