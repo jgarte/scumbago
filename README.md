@@ -7,16 +7,6 @@
 * [Figlet](http://www.figlet.org/)
 * [Postgres](https://www.postgresql.org/)
 
-#### Go
-* go get -u [github.com/jzelinskie/geddit](https://github.com/jzelinskie/geddit)
-* go get -u [github.com/fluffle/goirc](https://github.com/fluffle/goirc)
-* go get -u [github.com/Sirupsen/logrus](https://github.com/Sirupsen/logrus)
-* go get -u [golang.org/x/oauth2](https://godoc.org/golang.org/x/oauth2)
-* go get -u [github.com/lib/pq](https://github.com/lib/pq)
-* go get -u [github.com/kennygrant/sanitize](https://github.com/kennygrant/sanitize)
-* go get -u [github.com/dghubble/go-twitter/twitter](https://github.com/dghubble/go-twitter)
-* go get -u [github.com/kaelanb/newsapi-go](https://github.com/kaelanb/newsapi-go)
-
 News command powered by [News API](https://newsapi.org/).
 
 ## Setup
