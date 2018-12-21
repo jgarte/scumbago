@@ -3,6 +3,8 @@ github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6/go.mod h1:6YNgTHL
 github.com/cenkalti/backoff v2.1.0+incompatible h1:FIRvWBZrzS4YC7NT5cOuZjexzFvIr+Dbi6aD1cZaNBk=
 github.com/cenkalti/backoff v2.1.0+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/davidscholberg/go-durationfmt v0.0.0-20170122144659-64843a2083d3 h1:qshMBFxVjYjzI+kwvWvgoByF3uMCvnJiaK8KslWAbr8=
+github.com/davidscholberg/go-durationfmt v0.0.0-20170122144659-64843a2083d3/go.mod h1:M9fx6rAdHSYLKxXPgUXGgblb586CA7ceNrpu4DEc2No=
 github.com/dghubble/go-twitter v0.0.0-20181218060016-7ecc41c771b6 h1:zo99U7R0f+s5yhP5zerztS2ZejW2shkLHH9bAUHx3Zk=
 github.com/dghubble/go-twitter v0.0.0-20181218060016-7ecc41c771b6/go.mod h1:6beqTZaXeBPti9pDBcBEqxfJc7uCbSafqZPRDPQOKoM=
 github.com/dghubble/sling v1.2.0 h1:PYGS9ofwbV9nfhB1kYjB1vtXshMxlp2oQxTMMXVJ5pE=

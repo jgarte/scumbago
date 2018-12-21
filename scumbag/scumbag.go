@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"database/sql"
 	// Don't need a named import for a database driver.
@@ -44,6 +45,7 @@ const (
 	cmdSpell     = cmdPrefix + "sp"
 	cmdTwitter   = cmdPrefix + "twitter"
 	cmdURL       = cmdPrefix + "url"
+	cmdUptime    = cmdPrefix + "uptime"
 	cmdUrbanDict = cmdPrefix + "ud"
 	cmdVersion   = cmdPrefix + "version"
 	cmdWeather   = cmdPrefix + "weather"
@@ -73,6 +75,7 @@ type Scumbag struct {
 
 	ircClients   map[string]*irc.Conn
 	disconnected map[string]chan struct{}
+	startTime    time.Time
 }
 
 // NewBot returns a new Scumbag instance.
@@ -121,6 +124,8 @@ func (bot *Scumbag) Start() error {
 	if len(bot.ircClients) == connectErrors {
 		return errors.New("could not connect to any servers")
 	}
+
+	bot.startTime = time.Now()
 
 	return nil
 }
@@ -352,6 +357,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewSpellcheckCommand(bot, conn, line)
 	case cmdTwitter:
 		command = NewTwitterCommand(bot, conn, line)
+	case cmdUptime:
+		command = NewUptimeCommand(bot, conn, line)
 	case cmdUrbanDict:
 		command = NewUrbanDictionaryCommand(bot, conn, line)
 	case cmdURL:

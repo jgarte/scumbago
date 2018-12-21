@@ -3,6 +3,7 @@ module github.com/Oshuma/scumbago
 require (
 	github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6 // indirect
 	github.com/cenkalti/backoff v2.1.0+incompatible // indirect
+	github.com/davidscholberg/go-durationfmt v0.0.0-20170122144659-64843a2083d3
 	github.com/dghubble/go-twitter v0.0.0-20181218060016-7ecc41c771b6
 	github.com/dghubble/sling v1.2.0 // indirect
 	github.com/fluffle/goirc v1.0.1
