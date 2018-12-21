@@ -23,6 +23,10 @@
     "Password": "database_password"
   },
 
+  "APIXU": {
+    "Key": "apixu.com API key"
+  },
+
   "BreweryDB": {
     "Key": "brewerydb.com API key"
   },
@@ -37,10 +41,6 @@
 
   "Twitter": {
     "AccessToken": "foo_token"
-  },
-
-  "WeatherUnderground": {
-    "Key": "wunderground.com API key"
   },
 
   "WolframAlpha": {

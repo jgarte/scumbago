@@ -1,3 +1,5 @@
+github.com/apixu/apixu-go v1.1.1 h1:2qb7cZ4uui/HKjNVsi0EVlU3Pnmq1gSFGoq5lXusT2s=
+github.com/apixu/apixu-go v1.1.1/go.mod h1:TSbBaAjTLCbvKwfyIMs9C8vqvFq4ov/TKUcv2mUN+Uk=
 github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6 h1:KXlsf+qt/X5ttPGEjR0tPH1xaWWoKBEg9Q1THAj2h3I=
 github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6/go.mod h1:6YNgTHLutezwnBvyneBbwvB8C82y3dcoOj5EQJIdGXA=
 github.com/cenkalti/backoff v2.1.0+incompatible h1:FIRvWBZrzS4YC7NT5cOuZjexzFvIr+Dbi6aD1cZaNBk=

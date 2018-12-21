@@ -1,91 +1,20 @@
 package scumbag
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/apixu/apixu-go"
 	irc "github.com/fluffle/goirc/client"
+	log "github.com/sirupsen/logrus"
 )
 
-const (
-	weatherAPIURL = "http://api.wunderground.com/api/%s/%s/q/%s.json"
-)
+const forecastDays = 3
 
 var weatherHelp = [...]string{
 	cmdPrefix + "weather <location/zip>",
 	cmdPrefix + "weather -forecast <location/zip>",
-	cmdPrefix + "weather -hourly <location/zip>",
-}
-
-// ConditionsResponse stores the weather condition.
-type ConditionsResponse struct {
-	Observation `json:"current_observation"`
-}
-
-// Observation stores the condition's observation data.
-type Observation struct {
-	Temperature string `json:"temperature_string"`
-	Humidity    string `json:"relative_humidity"`
-}
-
-// ForecastResponse stores the forecast data.
-type ForecastResponse struct {
-	Forecast Forecast `json:"forecast"`
-}
-
-// Forecast stores the simple forecase data.
-type Forecast struct {
-	SimpleForecast SimpleForecast `json:"simpleforecast"`
-}
-
-// SimpleForecast stores the day's forecast.
-type SimpleForecast struct {
-	Day []ForecastDay `json:"forecastday"`
-}
-
-// ForecastDay stores the day's temp data.
-type ForecastDay struct {
-	Date Date     `json:"date"`
-	High HighTemp `json:"high"`
-	Low  LowTemp  `json:"low"`
-}
-
-// Date stores weather date data.
-type Date struct {
-	WeekdayShort string `json:"weekday_short"`
-}
-
-// HighTemp stores data for the high temp.
-type HighTemp struct {
-	Fahrenheit string `json:"fahrenheit"`
-}
-
-// LowTemp stores data for the low temp.
-type LowTemp struct {
-	Fahrenheit string `json:"fahrenheit"`
-}
-
-// HourlyResponse stores data from the hourly forecast API.
-type HourlyResponse struct {
-	Forecast []HourlyForecast `json:"hourly_forecast"`
-}
-
-// HourlyForecast stores data for the hourly forecast.
-type HourlyForecast struct {
-	Time HourlyTime `json:"FCTTIME"`
-	Temp HourlyTemp `json:"temp"`
-}
-
-// HourlyTime stores time data.
-type HourlyTime struct {
-	Hour   string `json:"hour_padded"`
-	Minute string `json:"min"`
-}
-
-// HourlyTemp stores data for an hourly forecast.
-type HourlyTemp struct {
-	Fahrenheit string `json:"english"`
 }
 
 // WeatherCommand interacts with the Weather Underground API.
@@ -128,8 +57,6 @@ func (cmd *WeatherCommand) Run(args ...string) {
 		switch cmdArgs[0] {
 		case "-forecast":
 			cmd.currentForecast(channel, cmdArgs)
-		case "-hourly":
-			cmd.hourlyForecast(channel, cmdArgs)
 		default:
 			cmd.Help()
 		}
@@ -150,84 +77,56 @@ func (cmd *WeatherCommand) Help() {
 }
 
 func (cmd *WeatherCommand) currentConditions(channel string, args []string) {
-	apiKey := cmd.bot.Config.WeatherUnderground.Key
-	requestURL := fmt.Sprintf(weatherAPIURL, apiKey, "conditions", args[0])
-	cmd.bot.Log.WithField("requestUrl", requestURL).Debug("WeatherCommand.currentConditions()")
-
-	content, err := getContent(requestURL)
+	client, err := cmd.getClient()
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.HandleWeatherCommand()")
+		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.currentConditions()")
 		return
 	}
 
-	var result ConditionsResponse
-	err = json.Unmarshal(content, &result)
+	current, err := client.Current(args[0])
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.HandleWeatherCommand()")
+		cmd.err(channel, err)
 		return
 	}
 
-	if result.Observation.Temperature != "" {
-		msg := fmt.Sprintf("%s / %s humidity", result.Observation.Temperature, result.Observation.Humidity)
-		cmd.bot.Msg(cmd.conn, channel, msg)
-	} else {
-		cmd.bot.Msg(cmd.conn, channel, "WTF zip code is that?")
-	}
+	msg := fmt.Sprintf("%.01f F / %.01f\" Precipitation / %d%% humidity",
+		current.Current.TempFahrenheit,
+		current.Current.PrecipIN,
+		current.Current.Humidity,
+	)
+	cmd.bot.Msg(cmd.conn, channel, msg)
 }
 
 func (cmd *WeatherCommand) currentForecast(channel string, args []string) {
-	apiKey := cmd.bot.Config.WeatherUnderground.Key
-	requestURL := fmt.Sprintf(weatherAPIURL, apiKey, "forecast", args[1])
-	cmd.bot.Log.WithField("requestUrl", requestURL).Debug("WeatherCommand.currentForecast()")
-
-	content, err := getContent(requestURL)
+	client, err := cmd.getClient()
 	if err != nil {
 		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.currentForecast()")
 		return
 	}
 
-	var result ForecastResponse
-	err = json.Unmarshal(content, &result)
+	forecast, err := client.Forecast(args[1], forecastDays)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.currentForecast()")
+		cmd.err(channel, err)
 		return
 	}
 
-	var forecast []string
-	for _, day := range result.Forecast.SimpleForecast.Day {
-		forecast = append(forecast, fmt.Sprintf("%s:%s'/%s'", day.Date.WeekdayShort, day.High.Fahrenheit, day.Low.Fahrenheit))
+	var fcOut []string
+	for _, fc := range forecast.Forecast.ForecastDay {
+		fcOut = append(fcOut, fmt.Sprintf("%s:%.0f'/%.0f'", time.Time(fc.Date).Weekday(), fc.Day.MinTempFahrenheit, fc.Day.MaxTempFahrenheit))
 	}
 
-	msg := strings.Join(forecast, "  ")
+	msg := strings.Join(fcOut, "  ")
 	cmd.bot.Msg(cmd.conn, channel, msg)
 }
 
-func (cmd *WeatherCommand) hourlyForecast(channel string, args []string) {
-	apiKey := cmd.bot.Config.WeatherUnderground.Key
-	requestURL := fmt.Sprintf(weatherAPIURL, apiKey, "hourly", args[1])
-	cmd.bot.Log.WithField("requestUrl", requestURL).Debug("WeatherCommand.hourlyForecast()")
+func (cmd *WeatherCommand) getClient() (apixu.Apixu, error) {
+	return apixu.New(apixu.Config{APIKey: cmd.bot.Config.APIXU.Key})
+}
 
-	content, err := getContent(requestURL)
-	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.hourlyForecast()")
-		return
+func (cmd *WeatherCommand) err(channel string, err error) {
+	cmd.bot.Log.WithField("error", err).Error("WeatherCommand.err()")
+	if e, ok := err.(*apixu.Error); ok {
+		cmd.bot.Log.WithFields(log.Fields{"code": e.Response().Code, "message": e.Response().Message}).Error("WeatherCommand.currentConditions()")
+		cmd.bot.Msg(cmd.conn, channel, e.Response().Message)
 	}
-
-	var result HourlyResponse
-	err = json.Unmarshal(content, &result)
-	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.hourlyForecast()")
-		return
-	}
-
-	var forecast []string
-	for _, time := range result.Forecast {
-		forecast = append(forecast, fmt.Sprintf("%s:%s (%s')", time.Time.Hour, time.Time.Minute, time.Temp.Fahrenheit))
-	}
-
-	// Just use the next 3 hours.
-	forecast = forecast[:3]
-
-	msg := strings.Join(forecast, "  ")
-	cmd.bot.Msg(cmd.conn, channel, msg)
 }

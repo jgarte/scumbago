@@ -1,6 +1,7 @@
 module github.com/Oshuma/scumbago
 
 require (
+	github.com/apixu/apixu-go v1.1.1
 	github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6 // indirect
 	github.com/cenkalti/backoff v2.1.0+incompatible // indirect
 	github.com/davidscholberg/go-durationfmt v0.0.0-20170122144659-64843a2083d3

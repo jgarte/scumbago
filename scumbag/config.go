@@ -8,16 +8,16 @@ import (
 
 // BotConfig contains the overall bot configuration.
 type BotConfig struct {
-	Servers            []*ServerConfig
-	Admins             []string
-	LogLevel           string
-	Database           *DatabaseConfig
-	BreweryDB          *BreweryDBConfig
-	News               *NewsConfig
-	OMDb               *OMDbConfig
-	Twitter            *TwitterConfig
-	WeatherUnderground *WeatherUndergroundConfig
-	WolframAlpha       *WolframAlphaConfig
+	Servers      []*ServerConfig
+	Admins       []string
+	LogLevel     string
+	APIXU        *APIXUConfig
+	Database     *DatabaseConfig
+	BreweryDB    *BreweryDBConfig
+	News         *NewsConfig
+	OMDb         *OMDbConfig
+	Twitter      *TwitterConfig
+	WolframAlpha *WolframAlphaConfig
 }
 
 // ServerConfig stores IRC connection information.
@@ -35,6 +35,11 @@ type DatabaseConfig struct {
 	Name     string
 	User     string
 	Password string
+}
+
+// APIXUConfig stores the APIXU API information.
+type APIXUConfig struct {
+	Key string
 }
 
 // BreweryDBConfig stores BreweryDB API information.
@@ -55,11 +60,6 @@ type OMDbConfig struct {
 // TwitterConfig stores Twitter API information.
 type TwitterConfig struct {
 	AccessToken string
-}
-
-// WeatherUndergroundConfig stores Weather Underground API information.
-type WeatherUndergroundConfig struct {
-	Key string
 }
 
 // WolframAlphaConfig stores Wolfram Alpha API information.
