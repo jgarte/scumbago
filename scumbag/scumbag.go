@@ -24,7 +24,7 @@ import (
 )
 
 // Version is a rarely updated string...
-var Version = "1.7.0"
+var Version = "1.8.0"
 
 // BuildTag is updated from the current git SHA when the Docker image is pushed.
 var BuildTag = "HEAD"
@@ -34,23 +34,24 @@ const (
 
 	cmdPrefix = "?"
 
-	cmdAdmin     = cmdPrefix + "admin"
-	cmdBeer      = cmdPrefix + "beer"
-	cmdFiglet    = cmdPrefix + "fig"
-	cmdGithub    = cmdPrefix + "gh"
-	cmdHelp      = cmdPrefix + "help"
-	cmdMovie     = cmdPrefix + "movie"
-	cmdNews      = cmdPrefix + "news"
-	cmdReddit    = cmdPrefix + "reddit"
-	cmdSpell     = cmdPrefix + "sp"
-	cmdTwitter   = cmdPrefix + "twitter"
-	cmdURL       = cmdPrefix + "url"
-	cmdUptime    = cmdPrefix + "uptime"
-	cmdUrbanDict = cmdPrefix + "ud"
-	cmdVersion   = cmdPrefix + "version"
-	cmdWeather   = cmdPrefix + "weather"
-	cmdWiki      = cmdPrefix + "wp"
-	cmdWolfram   = cmdPrefix + "wolfram"
+	cmdAdmin      = cmdPrefix + "admin"
+	cmdBeer       = cmdPrefix + "beer"
+	cmdFiglet     = cmdPrefix + "fig"
+	cmdGithub     = cmdPrefix + "gh"
+	cmdHackerNews = cmdPrefix + "hn"
+	cmdHelp       = cmdPrefix + "help"
+	cmdMovie      = cmdPrefix + "movie"
+	cmdNews       = cmdPrefix + "news"
+	cmdReddit     = cmdPrefix + "reddit"
+	cmdSpell      = cmdPrefix + "sp"
+	cmdTwitter    = cmdPrefix + "twitter"
+	cmdURL        = cmdPrefix + "url"
+	cmdUptime     = cmdPrefix + "uptime"
+	cmdUrbanDict  = cmdPrefix + "ud"
+	cmdVersion    = cmdPrefix + "version"
+	cmdWeather    = cmdPrefix + "weather"
+	cmdWiki       = cmdPrefix + "wp"
+	cmdWolfram    = cmdPrefix + "wolfram"
 
 	// ConfigFile is the path to the default config file.
 	ConfigFile = "config/bot.json"
@@ -345,6 +346,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewFigletCommand(bot, conn, line)
 	case cmdGithub:
 		command = NewGithubCommand(bot, conn, line)
+	case cmdHackerNews:
+		command = NewHackerNewsCommand(bot, conn, line)
 	case cmdHelp:
 		command = NewHelpCommand(bot, conn, line)
 	case cmdMovie:
