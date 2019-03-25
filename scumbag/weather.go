@@ -13,8 +13,8 @@ import (
 const forecastDays = 3
 
 var weatherHelp = [...]string{
-	cmdPrefix + "weather <location/zip>",
-	cmdPrefix + "weather -forecast <location/zip>",
+	cmdWeather + " <location/zip>",
+	cmdWeather + " -forecast <location/zip>",
 }
 
 // WeatherCommand interacts with the Weather Underground API.
