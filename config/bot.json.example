@@ -31,6 +31,10 @@
     "Key": "brewerydb.com API key"
   },
 
+  "IGDB": {
+    "Key": "igdb.com API key"
+  },
+
   "News": {
     "Key": "newsapi.org API key"
   },

@@ -1,3 +1,7 @@
+github.com/Henry-Sarabia/apicalypse v1.0.1 h1:vNHtDfys9aVQ3NGA0nCaaw2rs82QIBPFXsQFQK9H6V4=
+github.com/Henry-Sarabia/apicalypse v1.0.1/go.mod h1:elNsoPyACTUScwfjuZc1DLN68zFbeyDo2XlJkF1omts=
+github.com/Henry-Sarabia/blank v2.0.0+incompatible h1:JMl1li9aZ0XjcEv/2anvXe4pzvAOEz//mh74t9wOyeE=
+github.com/Henry-Sarabia/blank v2.0.0+incompatible/go.mod h1:EKLnM7Lq0E08WmivZuJoo099i07THd4ISgOBs3wOKTw=
 github.com/apixu/apixu-go v1.1.1 h1:2qb7cZ4uui/HKjNVsi0EVlU3Pnmq1gSFGoq5lXusT2s=
 github.com/apixu/apixu-go v1.1.1/go.mod h1:TSbBaAjTLCbvKwfyIMs9C8vqvFq4ov/TKUcv2mUN+Uk=
 github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6 h1:KXlsf+qt/X5ttPGEjR0tPH1xaWWoKBEg9Q1THAj2h3I=

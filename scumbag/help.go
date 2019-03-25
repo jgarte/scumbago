@@ -18,6 +18,7 @@ type HelpCommand struct {
 var helpCommands = []string{
 	cmdBeer,
 	cmdFiglet,
+	cmdGame,
 	cmdGithub,
 	cmdHackerNews,
 	cmdHelp,
@@ -52,6 +53,8 @@ func (cmd *HelpCommand) Run(args ...string) {
 		NewBeerCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdFiglet, cmdPrefix):
 		NewFigletCommand(cmd.bot, cmd.conn, cmd.line).Help()
+	case strings.TrimLeft(cmdGame, cmdPrefix):
+		NewGameCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdGithub, cmdPrefix):
 		NewGithubCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdHackerNews, cmdPrefix):

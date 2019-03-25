@@ -37,6 +37,7 @@ const (
 	cmdAdmin      = cmdPrefix + "admin"
 	cmdBeer       = cmdPrefix + "beer"
 	cmdFiglet     = cmdPrefix + "fig"
+	cmdGame       = cmdPrefix + "game"
 	cmdGithub     = cmdPrefix + "gh"
 	cmdHackerNews = cmdPrefix + "hn"
 	cmdHelp       = cmdPrefix + "help"
@@ -344,6 +345,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewBeerCommand(bot, conn, line)
 	case cmdFiglet:
 		command = NewFigletCommand(bot, conn, line)
+	case cmdGame:
+		command = NewGameCommand(bot, conn, line)
 	case cmdGithub:
 		command = NewGithubCommand(bot, conn, line)
 	case cmdHackerNews:

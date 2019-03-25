@@ -14,6 +14,7 @@ type BotConfig struct {
 	APIXU        *APIXUConfig
 	Database     *DatabaseConfig
 	BreweryDB    *BreweryDBConfig
+	IGDB         *IGDBConfig
 	News         *NewsConfig
 	OMDb         *OMDbConfig
 	Twitter      *TwitterConfig
@@ -44,6 +45,11 @@ type APIXUConfig struct {
 
 // BreweryDBConfig stores BreweryDB API information.
 type BreweryDBConfig struct {
+	Key string
+}
+
+// IGDBConfig stores IGDB.com API information.
+type IGDBConfig struct {
 	Key string
 }
 
