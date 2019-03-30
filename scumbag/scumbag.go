@@ -168,8 +168,8 @@ func (bot *Scumbag) Admin(nick string) bool {
 }
 
 // Msg sends a PRIVMSG to `channel_or_nick` on `conn.Config().Server`'s client.
-func (bot *Scumbag) Msg(conn *irc.Conn, channelOrNick string, message string) {
-	bot.ircClients[conn.Config().Server].Privmsg(channelOrNick, message)
+func (bot *Scumbag) Msg(conn *irc.Conn, channelOrNick string, message string, a ...interface{}) {
+	bot.ircClients[conn.Config().Server].Privmsg(channelOrNick, fmt.Sprintf(message, a...))
 }
 
 func (bot *Scumbag) connectClient(client *irc.Conn) error {
