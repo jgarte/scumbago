@@ -387,13 +387,22 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 }
 
 func getContent(requestURL string) ([]byte, error) {
-	response, err := http.Get(requestURL)
+	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	content, err := ioutil.ReadAll(response.Body)
-	response.Body.Close()
+	return getContentBytes(req)
+}
+
+func getContentBytes(req *http.Request) ([]byte, error) {
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
