@@ -176,7 +176,7 @@ func (cmd *GameCommand) Run(args ...string) {
 	case "-recent":
 		cmd.recent(channel, strings.Join(cmdArgs[1:], ""))
 	case "-upcoming":
-		cmd.upcoming(channel)
+		cmd.upcoming(channel, strings.Join(cmdArgs[1:], ""))
 	default:
 		cmd.search(channel, query)
 	}
@@ -244,57 +244,84 @@ func (cmd *GameCommand) recent(channel, platform string) {
 		return
 	}
 
-	// Games being released in the next 7 days.
-	date := strconv.FormatInt(time.Now().AddDate(0, 0, igdbTimeframe).Unix(), 10)
+	// Games released in the past N days.
+	date := time.Now().AddDate(0, 0, -igdbTimeframe)
+	releases, err := cmd.releases(date, platformCategories[platform])
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("GameCommand.recent()")
+		return
+	}
 
+	if len(releases) <= 0 {
+		cmd.bot.Msg(cmd.conn, channel, "Nothing.")
+		return
+	}
+
+	for _, release := range releases {
+		cmd.bot.Msg(cmd.conn, channel, "[%s] - %s", release.ReleaseDate(), release.Game.Name)
+	}
+}
+
+func (cmd *GameCommand) upcoming(channel, platform string) {
+	if len(platformCategories[platform]) == 0 {
+		cmd.bot.Msg(cmd.conn, channel, "Unknown platform: "+platform)
+		cmd.Help()
+		return
+	}
+
+	// Games being released in the next N days.
+	date := time.Now().AddDate(0, 0, igdbTimeframe)
+	releases, err := cmd.releases(date, platformCategories[platform])
+	if err != nil {
+		cmd.bot.Log.WithField("err", err).Error("GameCommand.upcoming()")
+		return
+	}
+
+	if len(releases) <= 0 {
+		cmd.bot.Msg(cmd.conn, channel, "Nothing.")
+		return
+	}
+
+	for _, release := range releases {
+		cmd.bot.Msg(cmd.conn, channel, "[%s] - %s", release.ReleaseDate(), release.Game.Name)
+	}
+}
+
+func (cmd *GameCommand) addHeaders(req *http.Request) {
+	req.Header.Add("user-key", cmd.bot.Config.IGDB.Key)
+	req.Header.Add("Accept", "application/json")
+}
+
+func (cmd *GameCommand) releases(date time.Time, platforms []int) ([]GameRelease, error) {
 	req, err := api.NewRequest(
 		"POST",
 		igdbReleaseDatesURL,
 		api.Limit(igdbLimit),
 		api.Fields("*, game.name, game.summary, game.first_release_date, game.platforms"),
 		api.Where(
-			fmt.Sprintf("platform = %s", joinPlatforms(platformCategories[platform])),
-			fmt.Sprintf("date > %s", date),
+			fmt.Sprintf("platform = %s", joinPlatforms(platforms)),
+			fmt.Sprintf("date > %s", strconv.FormatInt(date.Unix(), 10)),
 		),
 		api.Sort("date", "asc"),
 	)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GameCommand.recent()")
-		return
+		return nil, err
 	}
 
 	cmd.addHeaders(req)
 
 	content, err := getContentBytes(req)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GameCommand.recent()")
-		return
+		return nil, err
 	}
 
 	results := make([]GameRelease, igdbLimit)
 	err = json.Unmarshal(content, &results)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GameCommand.recent()")
-		return
+		return nil, err
 	}
 
-	if len(results) <= 0 {
-		cmd.bot.Msg(cmd.conn, channel, "Nothing coming out in the next %d days.", igdbTimeframe)
-		return
-	}
-
-	for _, release := range results {
-		cmd.bot.Msg(cmd.conn, channel, "[%s] - %s", release.ReleaseDate(), release.Game.Name)
-	}
-}
-
-func (cmd *GameCommand) upcoming(channel string) {
-	cmd.bot.Log.Debug("GameCommand.upcoming()")
-}
-
-func (cmd *GameCommand) addHeaders(req *http.Request) {
-	req.Header.Add("user-key", cmd.bot.Config.IGDB.Key)
-	req.Header.Add("Accept", "application/json")
+	return results, nil
 }
 
 func formatDate(date int64) string {
