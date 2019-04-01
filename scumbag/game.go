@@ -17,8 +17,9 @@ const (
 	igdbGamesURL        = igdbAPIURL + "/games"
 	igdbReleaseDatesURL = igdbAPIURL + "/release_dates"
 
-	igdbLimit     = 5
-	igdbTimeframe = 7
+	igdbLimit           = 5
+	igdbTimeframe       = 7
+	igdbSearchTimeframe = -50
 )
 
 var gameHelp = []string{
@@ -196,8 +197,8 @@ func (cmd *GameCommand) Help() {
 }
 
 func (cmd *GameCommand) search(channel, query string) {
-	// Released in the last 20 years.
-	releaseDate := strconv.FormatInt(time.Now().AddDate(-20, 0, 0).Unix(), 10)
+	// Released in the last N years.
+	releaseDate := strconv.FormatInt(time.Now().AddDate(igdbSearchTimeframe, 0, 0).Unix(), 10)
 
 	req, err := api.NewRequest(
 		"POST",

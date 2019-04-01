@@ -24,7 +24,7 @@ import (
 )
 
 // Version is a rarely updated string...
-var Version = "1.9.0"
+var Version = "1.9.1"
 
 // BuildTag is updated from the current git SHA when the Docker image is pushed.
 var BuildTag = "HEAD"
