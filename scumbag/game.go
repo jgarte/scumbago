@@ -196,9 +196,6 @@ func (cmd *GameCommand) Help() {
 }
 
 func (cmd *GameCommand) search(channel, query string) {
-	// Released in the last 20 years.
-	releaseDate := strconv.FormatInt(time.Now().AddDate(-20, 0, 0).Unix(), 10)
-
 	req, err := api.NewRequest(
 		"POST",
 		igdbGamesURL,
