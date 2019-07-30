@@ -97,6 +97,11 @@ func (bot *Scumbag) SaveURLs(conn *irc.Conn, line *irc.Line) {
 	msg := line.Args[1]
 
 	if urls := urlRegexp.FindAllString(msg, -1); urls != nil {
+		if ignoredChannel(bot, server, channel) {
+			bot.Log.WithFields(log.Fields{"server": server, "channel": channel}).Debug("SaveURLs(): Ignored channel.")
+			return
+		}
+
 		if ignoredNick(bot, server, nick) {
 			bot.Log.WithFields(log.Fields{"server": server, "nick": nick}).Debug("SaveURLs(): Ignored nick.")
 			return
@@ -191,6 +196,18 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 	}
 
 	return results, nil
+}
+
+func ignoredChannel(bot *Scumbag, server, channel string) bool {
+	serverConfig, err := bot.Config.Server(server)
+	if err != nil {
+		bot.Log.WithField("err", err).Error("ignoredChannel()")
+		return false
+	}
+	bot.Log.WithField("serverConfig", serverConfig).Debug("ignoredChannel()")
+
+	channelConfig := serverConfig.Channels[channel]
+	return !channelConfig.SaveURLs
 }
 
 func ignoredNick(bot *Scumbag, server, nick string) bool {

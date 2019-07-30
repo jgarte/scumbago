@@ -26,7 +26,7 @@ type ServerConfig struct {
 	Name     string
 	Server   string
 	SSL      bool
-	Channels []string
+	Channels map[string]*ChannelConfig
 }
 
 // DatabaseConfig stores database connection information.
@@ -36,6 +36,11 @@ type DatabaseConfig struct {
 	Name     string
 	User     string
 	Password string
+}
+
+// ChannelConfig stores configuration information for a single channel.
+type ChannelConfig struct {
+	SaveURLs bool
 }
 
 // APIXUConfig stores the APIXU API information.

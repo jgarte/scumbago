@@ -3,7 +3,10 @@
     {
       "Name":    "scumbag_bot",
       "Server":  "irc.example.com:6667",
-      "Channels": ["#scumbag", "#scumbag_two"]
+      "Channels": {
+        "#scumbag":     { "SaveURLs": true },
+        "#scumbag_two": { "SaveURLs": false }
+      }
     },
 
     {

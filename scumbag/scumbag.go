@@ -283,7 +283,8 @@ func (bot *Scumbag) setupHandlers() {
 
 		client.HandleFunc("CONNECTED", func(conn *irc.Conn, line *irc.Line) {
 			bot.Log.WithField("server", conn.Config().Server).Info("Connected to server.")
-			for _, channel := range serverConfig.Channels {
+			for channel, _ := range serverConfig.Channels {
+				bot.Log.WithField("channel", channel).Info("Joining channel.")
 				conn.Join(channel)
 			}
 		})
