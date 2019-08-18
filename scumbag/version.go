@@ -22,7 +22,7 @@ func NewVersionCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *VersionCom
 func (cmd *VersionCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("VersionCommand.Run()")
+		cmd.bot.LogError("VersionCommand.Run()", err)
 		return
 	}
 

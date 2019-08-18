@@ -25,13 +25,13 @@ func NewUptimeCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *UptimeComma
 func (cmd *UptimeCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("UptimeCommand.Run()")
+		cmd.bot.LogError("UptimeCommand.Run()", err)
 		return
 	}
 
 	uptime, err := durationfmt.Format(time.Since(cmd.bot.startTime), "%d days, %0h:%0m:%0s")
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("UptimeCommand.Run()")
+		cmd.bot.LogError("UptimeCommand.Run()", err)
 		return
 	}
 
@@ -42,7 +42,7 @@ func (cmd *UptimeCommand) Run(args ...string) {
 func (cmd *UptimeCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("UptimeCommand.Help()")
+		cmd.bot.LogError("UptimeCommand.Help()", err)
 		return
 	}
 

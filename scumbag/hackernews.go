@@ -75,7 +75,7 @@ func (cmd *HackerNewsCommand) Run(args ...string) {
 func (cmd *HackerNewsCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.Help()")
+		cmd.bot.LogError("HackerNewsCommand.Help()", err)
 		return
 	}
 
@@ -87,14 +87,14 @@ func (cmd *HackerNewsCommand) Help() {
 func (cmd *HackerNewsCommand) getTopStory() {
 	stories, err := cmd.getStories(hackerNewsTopStories)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.getTopStory()")
+		cmd.bot.LogError("HackerNewsCommand.getTopStory()", err)
 		return
 	}
 
 	if len(stories) > 0 {
 		item, err := cmd.getItem(stories[0])
 		if err != nil {
-			cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.getTopStory()")
+			cmd.bot.LogError("HackerNewsCommand.getTopStory()", err)
 			return
 		}
 		cmd.msgItem(item)
@@ -104,14 +104,14 @@ func (cmd *HackerNewsCommand) getTopStory() {
 func (cmd *HackerNewsCommand) getNewStory() {
 	stories, err := cmd.getStories(hackerNewsNewStories)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.getNewStory()")
+		cmd.bot.LogError("HackerNewsCommand.getNewStory()", err)
 		return
 	}
 
 	if len(stories) > 0 {
 		item, err := cmd.getItem(stories[0])
 		if err != nil {
-			cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.getNewStory()")
+			cmd.bot.LogError("HackerNewsCommand.getNewStory()", err)
 			return
 		}
 		cmd.msgItem(item)
@@ -121,14 +121,14 @@ func (cmd *HackerNewsCommand) getNewStory() {
 func (cmd *HackerNewsCommand) getBestStory() {
 	stories, err := cmd.getStories(hackerNewsBestStories)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.getBestStory()")
+		cmd.bot.LogError("HackerNewsCommand.getBestStory()", err)
 		return
 	}
 
 	if len(stories) > 0 {
 		item, err := cmd.getItem(stories[0])
 		if err != nil {
-			cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.getBestStory()")
+			cmd.bot.LogError("HackerNewsCommand.getBestStory()", err)
 			return
 		}
 		cmd.msgItem(item)
@@ -140,13 +140,13 @@ func (cmd *HackerNewsCommand) getStories(url string) ([]int64, error) {
 
 	content, err := getContent(url)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.getStories()")
+		cmd.bot.LogError("HackerNewsCommand.getStories()", err)
 		return nil, err
 	}
 
 	err = json.Unmarshal(content, &stories)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.getStories()")
+		cmd.bot.LogError("HackerNewsCommand.getStories()", err)
 		return nil, err
 	}
 
@@ -158,14 +158,14 @@ func (cmd *HackerNewsCommand) getItem(storyID int64) (HackerNewsItem, error) {
 
 	content, err := getContent(storyURL)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.getItem()")
+		cmd.bot.LogError("HackerNewsCommand.getItem()", err)
 		return HackerNewsItem{}, err
 	}
 
 	var item HackerNewsItem
 	err = json.Unmarshal(content, &item)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.getItem()")
+		cmd.bot.LogError("HackerNewsCommand.getItem()", err)
 		return HackerNewsItem{}, err
 	}
 
@@ -175,7 +175,7 @@ func (cmd *HackerNewsCommand) getItem(storyID int64) (HackerNewsItem, error) {
 func (cmd *HackerNewsCommand) msgItem(item HackerNewsItem) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("HackerNewsCommand.msgItem()")
+		cmd.bot.LogError("HackerNewsCommand.msgItem()", err)
 		return
 	}
 

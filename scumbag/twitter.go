@@ -30,7 +30,7 @@ func NewTwitterCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *TwitterCom
 func (cmd *TwitterCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("TwitterCommand.Run()")
+		cmd.bot.LogError("TwitterCommand.Run()", err)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (cmd *TwitterCommand) Run(args ...string) {
 func (cmd *TwitterCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("TwitterCommand.Help()")
+		cmd.bot.LogError("TwitterCommand.Help()", err)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (cmd *TwitterCommand) screennameStatus(query string) (*twitter.User, bool) 
 		IncludeEntities: twitter.Bool(true),
 	})
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("TwitterCommand.screennameStatus()")
+		cmd.bot.LogError("TwitterCommand.screennameStatus()", err)
 		return nil, true
 	}
 
@@ -104,7 +104,7 @@ func (cmd *TwitterCommand) searchTwitter(query string) *twitter.Tweet {
 		Query: query,
 	})
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("TwitterCommand.searchTwitter()")
+		cmd.bot.LogError("TwitterCommand.searchTwitter()", err)
 		return nil
 	}
 

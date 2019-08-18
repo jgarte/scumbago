@@ -15,6 +15,7 @@ require (
 	github.com/kaelanb/newsapi-go v0.0.0-20180513212549-00c6a4ff2d43
 	github.com/lib/pq v1.0.0
 	github.com/pkg/errors v0.8.0 // indirect
+	github.com/rollbar/rollbar-go v1.1.0
 	github.com/sirupsen/logrus v1.2.0
 	golang.org/x/oauth2 v0.0.0-20181203162652-d668ce993890
 )

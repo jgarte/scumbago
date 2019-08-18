@@ -37,7 +37,7 @@ func NewSpellcheckCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *Spellch
 func (cmd *SpellcheckCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("SpellcheckCommand.Run()")
+		cmd.bot.LogError("SpellcheckCommand.Run()", err)
 		return
 	}
 
@@ -54,7 +54,7 @@ func (cmd *SpellcheckCommand) Run(args ...string) {
 
 	response, err := cmd.Spellcheck(word)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("SpellcheckCommand.Run()")
+		cmd.bot.LogError("SpellcheckCommand.Run()", err)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (cmd *SpellcheckCommand) Run(args ...string) {
 func (cmd *SpellcheckCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("SpellcheckCommand.Help()")
+		cmd.bot.LogError("SpellcheckCommand.Help()", err)
 		return
 	}
 
@@ -82,14 +82,14 @@ func (bot *Scumbag) SpellcheckLine(conn *irc.Conn, line *irc.Line) {
 
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("AdminCommand.Run()")
+		cmd.bot.LogError("Scumbag.SpellcheckLine()", err)
 		return
 	}
 
 	if word, ok := cmd.getWordFromLine(line); ok == true {
 		response, err := cmd.Spellcheck(word)
 		if err != nil {
-			cmd.bot.Log.WithField("error", err).Error("Scumbag.SpellcheckLine()")
+			cmd.bot.LogError("Scumbag.SpellcheckLine()", err)
 			return
 		}
 
@@ -104,7 +104,7 @@ func (cmd *SpellcheckCommand) Spellcheck(word string) (string, error) {
 
 	echoOut, err := echo.StdoutPipe()
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("SpellcheckCommand.Spellcheck()")
+		cmd.bot.LogError("SpellcheckCommand.Spellcheck()", err)
 		return "", err
 	}
 	echo.Start()
@@ -112,7 +112,7 @@ func (cmd *SpellcheckCommand) Spellcheck(word string) (string, error) {
 	aspell.Stdin = echoOut
 	output, err := aspell.Output()
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("SpellcheckCommand.Spellcheck()")
+		cmd.bot.LogError("SpellcheckCommand.Spellcheck()", err)
 		return "", err
 	}
 	line := strings.Split(string(output[:]), "\n")[1]

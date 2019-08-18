@@ -60,7 +60,7 @@ func NewBeerCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *BeerCommand {
 func (cmd *BeerCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("BeerCommand.Run()")
+		cmd.bot.LogError("BeerCommand.Run()", err)
 		return
 	}
 
@@ -76,14 +76,14 @@ func (cmd *BeerCommand) Run(args ...string) {
 
 	content, err := getContent(requestURL)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("BeerCommand.Run()")
+		cmd.bot.LogError("BeerCommand.Run()", err)
 		return
 	}
 
 	var result BreweryDBResult
 	err = json.Unmarshal(content, &result)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("BeerCommand.Run()")
+		cmd.bot.LogError("BeerCommand.Run()", err)
 		return
 	}
 
@@ -108,7 +108,7 @@ func (cmd *BeerCommand) Run(args ...string) {
 func (cmd *BeerCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("BeerCommand.Help()")
+		cmd.bot.LogError("BeerCommand.Help()", err)
 		return
 	}
 

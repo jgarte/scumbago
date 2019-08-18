@@ -11,6 +11,7 @@ import (
 
 func main() {
 	configFile := flag.String("config", scumbag.ConfigFile, "Bot config JSON file")
+	environment := flag.String("env", "development", "App environment; defaults to 'development'")
 	logFilename := flag.String("log", scumbag.LogFile, "Bot log file")
 	versionFlag := flag.Bool("version", false, "Print version")
 	flag.Parse()
@@ -20,7 +21,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	bot, err := scumbag.NewBot(configFile, logFilename)
+	bot, err := scumbag.NewBot(configFile, logFilename, environment)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

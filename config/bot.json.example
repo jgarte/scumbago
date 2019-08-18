@@ -46,6 +46,10 @@
     "Key": "omdbapi.com API key"
   },
 
+  "Rollbar": {
+    "Token": "rollbar token"
+  },
+
   "Twitter": {
     "AccessToken": "foo_token"
   },

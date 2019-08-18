@@ -31,7 +31,7 @@ func NewWolframAlphaCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *Wolfr
 func (cmd *WolframAlphaCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("WolframAlphaCommand.Run()")
+		cmd.bot.LogError("WolframAlphaCommand.Run()", err)
 		return
 	}
 
@@ -47,7 +47,7 @@ func (cmd *WolframAlphaCommand) Run(args ...string) {
 
 	content, err := getContent(requestURL)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("WolframAlphaCommand.Run()")
+		cmd.bot.LogError("WolframAlphaCommand.Run()", err)
 		return
 	}
 
@@ -58,7 +58,7 @@ func (cmd *WolframAlphaCommand) Run(args ...string) {
 func (cmd *WolframAlphaCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("WolframAlphaCommand.Help()")
+		cmd.bot.LogError("WolframAlphaCommand.Help()", err)
 		return
 	}
 

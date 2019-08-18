@@ -30,7 +30,7 @@ func NewFigletCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *FigletComma
 func (cmd *FigletCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("FigletCommand.Run()")
+		cmd.bot.LogError("FigletCommand.Run()", err)
 		return
 	}
 
@@ -46,7 +46,7 @@ func (cmd *FigletCommand) Run(args ...string) {
 	}
 
 	if output, err := exec.Command(figletPath, phrase).Output(); err != nil {
-		cmd.bot.Log.WithField("error", err).Error("FigletCommand.Run()")
+		cmd.bot.LogError("FigletCommand.Run()", err)
 	} else {
 		for _, line := range strings.Split(string(output), "\n") {
 			cmd.bot.Msg(cmd.conn, channel, line)
@@ -58,7 +58,7 @@ func (cmd *FigletCommand) Run(args ...string) {
 func (cmd *FigletCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("FigletCommand.Help()")
+		cmd.bot.LogError("FigletCommand.Help()", err)
 		return
 	}
 

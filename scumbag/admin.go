@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	irc "github.com/fluffle/goirc/client"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -32,7 +31,7 @@ func NewAdminCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *AdminCommand
 func (cmd *AdminCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("AdminCommand.Run()")
+		cmd.bot.LogError("AdminCommand.Run()", err)
 		return
 	}
 
@@ -72,7 +71,7 @@ func (cmd *AdminCommand) ignoreNick(server, channel, nick string) {
 	if err == sql.ErrNoRows {
 		// New nick ignore; create one.
 		if _, insertErr := cmd.bot.DB.Exec("INSERT INTO ignored_nicks(server, nick, created_at) VALUES($1, $2, $3) RETURNING id;", server, nick, cmd.line.Time); insertErr != nil {
-			cmd.bot.Log.WithFields(log.Fields{"insertErr": insertErr}).Error("AdminCommand.ignoreNick()")
+			cmd.bot.LogError("AdminCommand.ignoreNick()", insertErr)
 		} else {
 			cmd.bot.Msg(cmd.conn, channel, "Ignoring: "+nick)
 		}
@@ -82,7 +81,7 @@ func (cmd *AdminCommand) ignoreNick(server, channel, nick string) {
 func (cmd *AdminCommand) unignoreNick(server, channel, nick string) {
 	_, err := cmd.bot.DB.Exec("DELETE FROM ignored_nicks WHERE server=$1 AND nick=$2;", server, nick)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("AdminCommand.unignoreNick()")
+		cmd.bot.LogError("AdminCommand.unignoreNick()", err)
 	} else {
 		cmd.bot.Msg(cmd.conn, channel, "Unignoring: "+nick)
 	}

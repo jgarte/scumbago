@@ -20,13 +20,14 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/dghubble/go-twitter/twitter"
+	"github.com/rollbar/rollbar-go"
 	"golang.org/x/oauth2"
 )
 
 // Version is a rarely updated string...
 var Version = "1.10.0"
 
-// BuildTag is updated from the current git SHA when the Docker image is pushed.
+// BuildTag is updated from the current git SHA when the binary is built.
 var BuildTag = "HEAD"
 
 const (
@@ -68,6 +69,8 @@ func VersionString() string {
 
 // Scumbag is the main bot struct.
 type Scumbag struct {
+	Environment string
+
 	Config  *BotConfig
 	DB      *sql.DB
 	Log     *log.Logger
@@ -81,16 +84,19 @@ type Scumbag struct {
 }
 
 // NewBot returns a new Scumbag instance.
-func NewBot(configFile *string, logFilename *string) (*Scumbag, error) {
+func NewBot(configFile, logFilename, environment *string) (*Scumbag, error) {
 	botConfig, err := LoadConfig(configFile)
 	if err != nil {
 		return nil, err
 	}
 
 	bot := &Scumbag{
+		Environment:  *environment,
 		Config:       botConfig,
 		disconnected: make(map[string]chan struct{}),
 	}
+
+	bot.setupRollbar()
 
 	if err := bot.setupLogger(logFilename); err != nil {
 		return nil, err
@@ -118,7 +124,7 @@ func (bot *Scumbag) Start() error {
 
 	for _, client := range bot.ircClients {
 		if err := bot.connectClient(client); err != nil {
-			bot.Log.WithFields(log.Fields{"err": err, "client": client}).Error("IRC Connection Error")
+			bot.LogError("Scumbag.Start(): IRC Connection Error", err)
 			connectErrors++
 		}
 	}
@@ -172,11 +178,25 @@ func (bot *Scumbag) Msg(conn *irc.Conn, channelOrNick string, message string, a 
 	bot.ircClients[conn.Config().Server].Privmsg(channelOrNick, fmt.Sprintf(message, a...))
 }
 
+func (bot *Scumbag) LogError(msg string, err error) {
+	bot.Log.WithField("err", err).Error(msg)
+	rollbar.ErrorWithExtras(rollbar.ERR, err, map[string]interface{}{
+		"message": msg,
+	})
+}
+
 func (bot *Scumbag) connectClient(client *irc.Conn) error {
 	if err := client.Connect(); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (bot *Scumbag) setupRollbar() {
+	rollbar.SetToken(bot.Config.Rollbar.Token)
+	rollbar.SetEnvironment(bot.Environment)
+	rollbar.SetCodeVersion(BuildTag)
+	rollbar.SetServerRoot("github.com/Oshuma/scumbago")
 }
 
 func (bot *Scumbag) setupLogger(logFilename *string) error {
@@ -276,7 +296,7 @@ func (bot *Scumbag) setupHandlers() {
 
 		serverConfig, err := bot.Config.Server(server)
 		if err != nil {
-			bot.Log.WithField("err", err).Error("setupHandlers()")
+			bot.LogError("setupHandlers()", err)
 			continue
 		}
 		bot.Log.WithField("serverConfig", serverConfig).Debug("setupHandlers()")

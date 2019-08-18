@@ -35,7 +35,7 @@ func NewWeatherCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *WeatherCom
 func (cmd *WeatherCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.Run()")
+		cmd.bot.LogError("WeatherCommand.Run()", err)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (cmd *WeatherCommand) Run(args ...string) {
 func (cmd *WeatherCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("WeatherCommand.Help()")
+		cmd.bot.LogError("WeatherCommand.Help()", err)
 		return
 	}
 
@@ -79,7 +79,7 @@ func (cmd *WeatherCommand) Help() {
 func (cmd *WeatherCommand) currentConditions(channel string, args []string) {
 	client, err := cmd.getClient()
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.currentConditions()")
+		cmd.bot.LogError("WeatherCommand.currentConditions()", err)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (cmd *WeatherCommand) currentConditions(channel string, args []string) {
 func (cmd *WeatherCommand) currentForecast(channel string, args []string) {
 	client, err := cmd.getClient()
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("WeatherCommand.currentForecast()")
+		cmd.bot.LogError("WeatherCommand.currentForecast()", err)
 		return
 	}
 
@@ -124,7 +124,7 @@ func (cmd *WeatherCommand) getClient() (apixu.Apixu, error) {
 }
 
 func (cmd *WeatherCommand) err(channel string, err error) {
-	cmd.bot.Log.WithField("error", err).Error("WeatherCommand.err()")
+	cmd.bot.LogError("WeatherCommand.err()", err)
 	if e, ok := err.(*apixu.Error); ok {
 		cmd.bot.Log.WithFields(log.Fields{"code": e.Response().Code, "message": e.Response().Message}).Error("WeatherCommand.currentConditions()")
 		cmd.bot.Msg(cmd.conn, channel, e.Response().Message)

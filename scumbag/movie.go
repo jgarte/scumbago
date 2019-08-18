@@ -69,7 +69,7 @@ func NewMovieCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *MovieCommand
 func (cmd *MovieCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("MovieCommand.Run()")
+		cmd.bot.LogError("MovieCommand.Run()", err)
 		return
 	}
 
@@ -85,14 +85,14 @@ func (cmd *MovieCommand) Run(args ...string) {
 	searchRequestURL := fmt.Sprintf(omdbSearchURL, cmd.bot.Config.OMDb.Key, movieQuery)
 	content, err := getContent(searchRequestURL)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("MovieCommand.Run()")
+		cmd.bot.LogError("MovieCommand.Run()", err)
 		return
 	}
 
 	var movieSearchResult MovieSearchResult
 	err = json.Unmarshal(content, &movieSearchResult)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("MovieCommand.Run()")
+		cmd.bot.LogError("MovieCommand.Run()", err)
 		return
 	}
 
@@ -107,14 +107,14 @@ func (cmd *MovieCommand) Run(args ...string) {
 	imdbRequestURL := fmt.Sprintf(omdbImdbURL, cmd.bot.Config.OMDb.Key, firstResult.ImdbID)
 	content, err = getContent(imdbRequestURL)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("MovieCommand.Run()")
+		cmd.bot.LogError("MovieCommand.Run()", err)
 		return
 	}
 
 	var movieData MovieData
 	err = json.Unmarshal(content, &movieData)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("MovieCommand.Run()")
+		cmd.bot.LogError("MovieCommand.Run()", err)
 		return
 	}
 
@@ -132,7 +132,7 @@ func (cmd *MovieCommand) Run(args ...string) {
 func (cmd *MovieCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("MovieCommand.Help()")
+		cmd.bot.LogError("MovieCommand.Help()", err)
 		return
 	}
 

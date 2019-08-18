@@ -17,6 +17,7 @@ type BotConfig struct {
 	IGDB         *IGDBConfig
 	News         *NewsConfig
 	OMDb         *OMDbConfig
+	Rollbar      *RollbarConfig
 	Twitter      *TwitterConfig
 	WolframAlpha *WolframAlphaConfig
 }
@@ -66,6 +67,11 @@ type NewsConfig struct {
 // OMDbConfig stores the OMDb API information.
 type OMDbConfig struct {
 	Key string
+}
+
+// RollbarConfig stores Rollbar config information.
+type RollbarConfig struct {
+	Token string
 }
 
 // TwitterConfig stores Twitter API information.

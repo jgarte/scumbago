@@ -62,7 +62,7 @@ func NewUrbanDictionaryCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *Ur
 func (cmd *UrbanDictionaryCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("UrbanDictionaryCommand.Run()")
+		cmd.bot.LogError("UrbanDictionaryCommand.Run()", err)
 		return
 	}
 
@@ -79,14 +79,14 @@ func (cmd *UrbanDictionaryCommand) Run(args ...string) {
 
 	content, err := getContent(requestURL)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("UrbanDictionaryCommand.Run()")
+		cmd.bot.LogError("UrbanDictionaryCommand.Run()", err)
 		return
 	}
 
 	var result UrbanDictResult
 	err = json.Unmarshal(content, &result)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("UrbanDictionaryCommand.Run()")
+		cmd.bot.LogError("UrbanDictionaryCommand.Run()", err)
 		return
 	}
 
@@ -111,7 +111,7 @@ func (cmd *UrbanDictionaryCommand) Run(args ...string) {
 func (cmd *UrbanDictionaryCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("UrbanDictionaryCommand.Help()")
+		cmd.bot.LogError("UrbanDictionaryCommand.Help()", err)
 		return
 	}
 

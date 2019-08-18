@@ -156,7 +156,7 @@ func NewGameCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *GameCommand {
 func (cmd *GameCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GameCommand.Run()")
+		cmd.bot.LogError("GameCommand.Run()", err)
 		return
 	}
 
@@ -186,7 +186,7 @@ func (cmd *GameCommand) Run(args ...string) {
 func (cmd *GameCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GameCommand.Help()")
+		cmd.bot.LogError("GameCommand.Help()", err)
 		return
 	}
 
@@ -205,7 +205,7 @@ func (cmd *GameCommand) search(channel, query string) {
 		api.Search("", query),
 	)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GameCommand.search()")
+		cmd.bot.LogError("GameCommand.search()", err)
 		return
 	}
 
@@ -213,14 +213,14 @@ func (cmd *GameCommand) search(channel, query string) {
 
 	content, err := getContentBytes(req)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GameCommand.search()")
+		cmd.bot.LogError("GameCommand.search()", err)
 		return
 	}
 
 	results := make([]Game, 1)
 	err = json.Unmarshal(content, &results)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GameCommand.search()")
+		cmd.bot.LogError("GameCommand.search()", err)
 		return
 	}
 
@@ -245,7 +245,7 @@ func (cmd *GameCommand) recent(channel, platform string) {
 	date := time.Now().AddDate(0, 0, -igdbTimeframe)
 	releases, err := cmd.releases(date, platformCategories[platform])
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GameCommand.recent()")
+		cmd.bot.LogError("GameCommand.recent()", err)
 		return
 	}
 
@@ -270,7 +270,7 @@ func (cmd *GameCommand) upcoming(channel, platform string) {
 	date := time.Now().AddDate(0, 0, igdbTimeframe)
 	releases, err := cmd.releases(date, platformCategories[platform])
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GameCommand.upcoming()")
+		cmd.bot.LogError("GameCommand.upcoming()", err)
 		return
 	}
 

@@ -48,7 +48,7 @@ func NewLinkCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *LinkCommand {
 func (cmd *LinkCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("LinkCommand.Run()")
+		cmd.bot.LogError("LinkCommand.Run()", err)
 		return
 	}
 
@@ -60,7 +60,7 @@ func (cmd *LinkCommand) Run(args ...string) {
 
 	links, err := cmd.SearchLinks(query)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("LinkCommand.Run()")
+		cmd.bot.LogError("LinkCommand.Run()", err)
 		return
 	}
 
@@ -76,7 +76,7 @@ func (cmd *LinkCommand) Run(args ...string) {
 func (cmd *LinkCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("LinkCommand.Help()")
+		cmd.bot.LogError("LinkCommand.Help()", err)
 		return
 	}
 
@@ -88,7 +88,7 @@ func (bot *Scumbag) SaveURLs(conn *irc.Conn, line *irc.Line) {
 	link := NewLinkCommand(bot, conn, line)
 	channel, err := link.Channel(line)
 	if err != nil {
-		bot.Log.WithField("err", err).Error("SaveURLs()")
+		bot.LogError("SaveURLs()", err)
 		return
 	}
 
@@ -115,12 +115,12 @@ func (bot *Scumbag) SaveURLs(conn *irc.Conn, line *irc.Line) {
 			case err == sql.ErrNoRows:
 				// Link doesn't exist, so create one.
 				if _, insertErr := bot.DB.Exec("INSERT INTO links(nick, url, server, channel, created_at) VALUES($1, $2, $3, $4, $5) RETURNING id;", nick, url, server, channel, line.Time); insertErr != nil {
-					bot.Log.WithFields(log.Fields{"insertErr": insertErr}).Error("SaveURLs()")
+					bot.LogError("SaveURLs()", insertErr)
 				}
 				bot.Log.WithFields(log.Fields{"URL": url, "server": server, "channel": channel}).Debug("SaveURLs(): New Link")
 
 			case err != nil:
-				bot.Log.WithFields(log.Fields{"err": err}).Error("SaveURLs()")
+				bot.LogError("SaveURLs()", err)
 
 			default:
 				bot.Log.WithFields(log.Fields{"url": url}).Debug("SaveURLs(): Existing Link")
@@ -135,7 +135,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
+		cmd.bot.LogError("LinkCommand.SearchLinks()", err)
 		return results, err
 	}
 
@@ -145,7 +145,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 
 		rows, err := cmd.bot.DB.Query(`SELECT nick, url, server, channel FROM links WHERE url ILIKE '%' || $1 || '%' AND server=$2 AND channel=$3 ORDER BY created_at DESC LIMIT $4;`, urlQuery, cmd.conn.Config().Server, channel, searchLimit)
 		if err != nil {
-			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
+			cmd.bot.LogError("LinkCommand.SearchLinks()", err)
 			return nil, err
 		}
 		defer rows.Close()
@@ -154,7 +154,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 			link := Link{}
 			err := rows.Scan(&link.Nick, &link.URL, &link.Server, &link.Channel)
 			if err != nil {
-				cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
+				cmd.bot.LogError("LinkCommand.SearchLinks()", err)
 				return nil, err
 			}
 
@@ -163,7 +163,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 
 		err = rows.Err()
 		if err != nil {
-			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
+			cmd.bot.LogError("LinkCommand.SearchLinks()", err)
 			return nil, err
 		}
 	} else {
@@ -172,7 +172,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 
 		rows, err := cmd.bot.DB.Query(`SELECT nick, url, server, channel FROM links WHERE nick=$1 AND server=$2 AND channel=$3 ORDER BY created_at DESC LIMIT $4;`, query, cmd.conn.Config().Server, channel, searchLimit)
 		if err != nil {
-			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
+			cmd.bot.LogError("LinkCommand.SearchLinks()", err)
 			return nil, err
 		}
 		defer rows.Close()
@@ -181,7 +181,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 			link := Link{}
 			err := rows.Scan(&link.Nick, &link.URL, &link.Server, &link.Channel)
 			if err != nil {
-				cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
+				cmd.bot.LogError("LinkCommand.SearchLinks()", err)
 				return nil, err
 			}
 
@@ -190,7 +190,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 
 		err = rows.Err()
 		if err != nil {
-			cmd.bot.Log.WithField("err", err).Error("LinkCommand.SearchLinks()")
+			cmd.bot.LogError("LinkCommand.SearchLinks()", err)
 			return nil, err
 		}
 	}
@@ -201,7 +201,7 @@ func (cmd *LinkCommand) SearchLinks(query string) ([]*Link, error) {
 func ignoredChannel(bot *Scumbag, server, channel string) bool {
 	serverConfig, err := bot.Config.Server(server)
 	if err != nil {
-		bot.Log.WithField("err", err).Error("ignoredChannel()")
+		bot.LogError("ignoredChannel()", err)
 		return false
 	}
 	bot.Log.WithField("serverConfig", serverConfig).Debug("ignoredChannel()")
@@ -214,7 +214,7 @@ func ignoredNick(bot *Scumbag, server, nick string) bool {
 	var result bool
 	err := bot.DB.QueryRow("SELECT EXISTS (SELECT 1 FROM ignored_nicks WHERE server=$1 AND nick=$2);", server, nick).Scan(&result)
 	if err != nil && err != sql.ErrNoRows {
-		bot.Log.WithField("err", err).Error("ignoredNick()")
+		bot.LogError("ignoredNick()", err)
 		return false
 	}
 	return result

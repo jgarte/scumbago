@@ -39,7 +39,7 @@ func NewWikiCommand(bot *Scumbag, conn *irc.Conn, line *irc.Line) *WikiCommand {
 func (cmd *WikiCommand) Run(args ...string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("WikiCommand.Run()")
+		cmd.bot.LogError("WikiCommand.Run()", err)
 		return
 	}
 
@@ -54,7 +54,7 @@ func (cmd *WikiCommand) Run(args ...string) {
 
 	content, err := getContent(requestURL)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("WikiCommand.Run()")
+		cmd.bot.LogError("WikiCommand.Run()", err)
 		return
 	}
 
@@ -63,7 +63,7 @@ func (cmd *WikiCommand) Run(args ...string) {
 
 	err = json.Unmarshal(content, &resultArray)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("WikiCommand.Run()")
+		cmd.bot.LogError("WikiCommand.Run()", err)
 		return
 	}
 
@@ -80,7 +80,7 @@ func (cmd *WikiCommand) Run(args ...string) {
 func (cmd *WikiCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("WikiCommand.Help()")
+		cmd.bot.LogError("WikiCommand.Help()", err)
 		return
 	}
 

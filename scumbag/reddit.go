@@ -64,7 +64,7 @@ func (cmd *RedditCommand) Run(args ...string) {
 func (cmd *RedditCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("RedditCommand.Help()")
+		cmd.bot.LogError("RedditCommand.Help()", err)
 		return
 	}
 
@@ -90,13 +90,13 @@ func (cmd *RedditCommand) subredditSubmission(subreddit string) {
 
 	submissions, err := cmd.bot.Reddit.SubredditSubmissions(subreddit, geddit.HotSubmissions, opts)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("RedditCommand.subredditSubmission()")
+		cmd.bot.LogError("RedditCommand.subredditSubmission()", err)
 		return
 	}
 
 	submission, err := cmd.getLatestSubmission(submissions)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("RedditCommand.subredditSubmission()")
+		cmd.bot.LogError("RedditCommand.subredditSubmission()", err)
 		return
 	}
 
@@ -112,7 +112,7 @@ func (cmd *RedditCommand) randomSubredditSubmission(subreddit string) {
 
 	submissions, err := cmd.bot.Reddit.SubredditSubmissions(subreddit, geddit.HotSubmissions, opts)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("RedditCommand.randomSubredditSubmission()")
+		cmd.bot.LogError("RedditCommand.randomSubredditSubmission()", err)
 		return
 	}
 
@@ -127,7 +127,7 @@ func (cmd *RedditCommand) randomSubredditSubmission(subreddit string) {
 func (cmd *RedditCommand) msg(submission *geddit.Submission) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("RedditCommand.msg()")
+		cmd.bot.LogError("RedditCommand.msg()", err)
 		return
 	}
 

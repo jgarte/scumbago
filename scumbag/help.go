@@ -88,7 +88,7 @@ func (cmd *HelpCommand) Run(args ...string) {
 func (cmd *HelpCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("HelpCommand.Help()")
+		cmd.bot.LogError("HelpCommand.Help()", err)
 		return
 	}
 

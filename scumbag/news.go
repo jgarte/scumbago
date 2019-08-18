@@ -67,7 +67,7 @@ func (cmd *NewsCommand) Run(args ...string) {
 func (cmd *NewsCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("NewsCommand.Help()")
+		cmd.bot.LogError("NewsCommand.Help()", err)
 		return
 	}
 
@@ -79,7 +79,7 @@ func (cmd *NewsCommand) Help() {
 func (cmd *NewsCommand) getTopHeadline() {
 	newsResponse, err := cmd.getNewsResponse()
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("NewsCommand.getTopHeadline")
+		cmd.bot.LogError("NewsCommand.getTopHeadline()", err)
 		return
 	}
 
@@ -95,7 +95,7 @@ func (cmd *NewsCommand) getTopicHeadline(topic string) {
 
 	newsResponse, err := cmd.getNewsResponse("category=" + topic)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("NewsCommand.getTopHeadline")
+		cmd.bot.LogError("NewsCommand.getTopHeadline()", err)
 		return
 	}
 
@@ -108,7 +108,7 @@ func (cmd *NewsCommand) searchNews(arg string) {
 	// The params are already url.PathEscape'd in the newsapi library, so we don't need to do it here.
 	newsResponse, err := cmd.getNewsResponse("q=" + query)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("NewsCommand.getTopHeadline")
+		cmd.bot.LogError("NewsCommand.getTopHeadline()", err)
 		return
 	}
 
@@ -142,7 +142,7 @@ func (cmd *NewsCommand) msgArticle(article newsapi.Article) {
 func (cmd *NewsCommand) msg(message string) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("NewsCommand.getTopHeadline()")
+		cmd.bot.LogError("NewsCommand.getTopHeadline()", err)
 		return
 	}
 

@@ -95,14 +95,14 @@ func (cmd *GithubCommand) Run(args ...string) {
 
 	content, err := getContent(requestURL)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("GithubCommand.Run()")
+		cmd.bot.LogError("GithubCommand.Run()", err)
 		return
 	}
 
 	events := make([]GithubEvent, 0)
 	err = json.Unmarshal(content, &events)
 	if err != nil {
-		cmd.bot.Log.WithField("error", err).Error("GithubCommand.Run()")
+		cmd.bot.LogError("GithubCommand.Run()", err)
 		return
 	}
 
@@ -126,7 +126,7 @@ func (cmd *GithubCommand) Run(args ...string) {
 func (cmd *GithubCommand) Help() {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GithubCommand.Help()")
+		cmd.bot.LogError("GithubCommand.Help()", err)
 		return
 	}
 
@@ -136,7 +136,7 @@ func (cmd *GithubCommand) Help() {
 func (cmd *GithubCommand) pushEvent(event GithubEvent) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GithubCommand.pushEvent()")
+		cmd.bot.LogError("GithubCommand.pushEvent()", err)
 		return
 	}
 
@@ -145,14 +145,14 @@ func (cmd *GithubCommand) pushEvent(event GithubEvent) {
 
 		content, err := getContent(eventCommit.URL)
 		if err != nil {
-			cmd.bot.Log.WithField("error", err).Error("GithubCommand.pushEvent()")
+			cmd.bot.LogError("GithubCommand.pushEvent()", err)
 			return
 		}
 
 		var commit GithubCommit
 		err = json.Unmarshal(content, &commit)
 		if err != nil {
-			cmd.bot.Log.WithField("error", err).Error("GithubCommand.pushEvent()")
+			cmd.bot.LogError("GithubCommand.pushEvent()", err)
 			return
 		}
 
@@ -166,7 +166,7 @@ func (cmd *GithubCommand) pushEvent(event GithubEvent) {
 func (cmd *GithubCommand) issueCommentEvent(event GithubEvent) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GithubCommand.issueCommentEvent()")
+		cmd.bot.LogError("GithubCommand.issueCommentEvent()", err)
 		return
 	}
 
@@ -178,7 +178,7 @@ func (cmd *GithubCommand) issueCommentEvent(event GithubEvent) {
 func (cmd *GithubCommand) pullRequestEvent(event GithubEvent) {
 	channel, err := cmd.Channel(cmd.line)
 	if err != nil {
-		cmd.bot.Log.WithField("err", err).Error("GithubCommand.pullRequestEvent()")
+		cmd.bot.LogError("GithubCommand.pullRequestEvent()", err)
 		return
 	}
 
