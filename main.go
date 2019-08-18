@@ -11,7 +11,7 @@ import (
 
 func main() {
 	configFile := flag.String("config", scumbag.ConfigFile, "Bot config JSON file")
-	environment := flag.String("env", "development", "App environment; defaults to 'development'")
+	environment := flag.String("env", "development", "App environment (development, production, etc)")
 	logFilename := flag.String("log", scumbag.LogFile, "Bot log file")
 	versionFlag := flag.Bool("version", false, "Print version")
 	flag.Parse()
