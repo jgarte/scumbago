@@ -21,3 +21,6 @@ jobs:
 
     - name: Build
       run: make clean all
+
+    - name: Print Version
+      run: ./build/scumbago -version
