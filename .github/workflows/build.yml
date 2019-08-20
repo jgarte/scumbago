@@ -6,8 +6,12 @@ on:
 
 jobs:
   build:
-    name: Build
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-18.04]
+
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     steps:
 
     - name: Set up Go 1.12
