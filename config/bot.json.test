@@ -1,0 +1,57 @@
+{
+  "Servers": [
+    {
+      "Name":    "scumbag_bot",
+      "Server":  "irc.example.com:6667",
+      "SSL": true,
+      "Channels": {
+        "#scumbag":     { "SaveURLs": true },
+        "#scumbag_two": { "SaveURLs": false }
+      }
+    }
+  ],
+
+  "Admins": [ "admin_nick", "another_admin" ],
+
+  "LogLevel": "Info",
+
+  "Database": {
+    "Host": "db.example.com",
+    "SSL": "disable",
+    "Name": "scumbag",
+    "User": "database_user",
+    "Password": "database_password"
+  },
+
+  "APIXU": {
+    "Key": "apixu.com API key"
+  },
+
+  "BreweryDB": {
+    "Key": "brewerydb.com API key"
+  },
+
+  "IGDB": {
+    "Key": "igdb.com API key"
+  },
+
+  "News": {
+    "Key": "newsapi.org API key"
+  },
+
+  "OMDb": {
+    "Key": "omdbapi.com API key"
+  },
+
+  "Rollbar": {
+    "Token": "rollbar token"
+  },
+
+  "Twitter": {
+    "AccessToken": "foo_token"
+  },
+
+  "WolframAlpha": {
+    "AppID": "your app ID"
+  }
+}
