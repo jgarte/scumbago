@@ -26,14 +26,6 @@
     "Password": "database_password"
   },
 
-  "APIXU": {
-    "Key": "apixu.com API key"
-  },
-
-  "BreweryDB": {
-    "Key": "brewerydb.com API key"
-  },
-
   "IGDB": {
     "Key": "igdb.com API key"
   },

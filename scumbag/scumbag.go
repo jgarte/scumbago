@@ -36,7 +36,6 @@ const (
 	cmdPrefix = "?"
 
 	cmdAdmin      = cmdPrefix + "admin"
-	cmdBeer       = cmdPrefix + "beer"
 	cmdFiglet     = cmdPrefix + "fig"
 	cmdGame       = cmdPrefix + "game"
 	cmdGithub     = cmdPrefix + "gh"
@@ -51,7 +50,6 @@ const (
 	cmdUptime     = cmdPrefix + "uptime"
 	cmdUrbanDict  = cmdPrefix + "ud"
 	cmdVersion    = cmdPrefix + "version"
-	cmdWeather    = cmdPrefix + "weather"
 	cmdWiki       = cmdPrefix + "wp"
 	cmdWolfram    = cmdPrefix + "wolfram"
 
@@ -362,8 +360,6 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 	switch commandName {
 	case cmdAdmin:
 		command = NewAdminCommand(bot, conn, line)
-	case cmdBeer:
-		command = NewBeerCommand(bot, conn, line)
 	case cmdFiglet:
 		command = NewFigletCommand(bot, conn, line)
 	case cmdGame:
@@ -392,8 +388,6 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewLinkCommand(bot, conn, line)
 	case cmdVersion:
 		command = NewVersionCommand(bot, conn, line)
-	case cmdWeather:
-		command = NewWeatherCommand(bot, conn, line)
 	case cmdWiki:
 		command = NewWikiCommand(bot, conn, line)
 	case cmdWolfram:

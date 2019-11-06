@@ -16,7 +16,6 @@ type HelpCommand struct {
 }
 
 var helpCommands = []string{
-	cmdBeer,
 	cmdFiglet,
 	cmdGame,
 	cmdGithub,
@@ -30,7 +29,6 @@ var helpCommands = []string{
 	cmdURL,
 	cmdUptime,
 	cmdUrbanDict,
-	cmdWeather,
 	cmdWiki,
 	cmdWolfram,
 }
@@ -49,8 +47,6 @@ func (cmd *HelpCommand) Run(args ...string) {
 
 	helpPhrase := args[0]
 	switch helpPhrase {
-	case strings.TrimLeft(cmdBeer, cmdPrefix):
-		NewBeerCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdFiglet, cmdPrefix):
 		NewFigletCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdGame, cmdPrefix):
@@ -73,8 +69,6 @@ func (cmd *HelpCommand) Run(args ...string) {
 		NewLinkCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdUptime, cmdPrefix):
 		NewUptimeCommand(cmd.bot, cmd.conn, cmd.line).Help()
-	case strings.TrimLeft(cmdWeather, cmdPrefix):
-		NewWeatherCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdWiki, cmdPrefix):
 		NewWikiCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdWolfram, cmdPrefix):
