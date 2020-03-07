@@ -35,6 +35,10 @@
     "Key": "omdbapi.com API key"
   },
 
+  "OWM": {
+    "Key": "openweathermap.org API key"
+  },
+
   "Rollbar": {
     "Token": "rollbar token"
   },

@@ -29,6 +29,7 @@ var helpCommands = []string{
 	cmdURL,
 	cmdUptime,
 	cmdUrbanDict,
+	cmdWeather,
 	cmdWiki,
 	cmdWolfram,
 }
@@ -69,6 +70,8 @@ func (cmd *HelpCommand) Run(args ...string) {
 		NewLinkCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdUptime, cmdPrefix):
 		NewUptimeCommand(cmd.bot, cmd.conn, cmd.line).Help()
+	case strings.TrimLeft(cmdWeather, cmdPrefix):
+		NewWeatherCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdWiki, cmdPrefix):
 		NewWikiCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdWolfram, cmdPrefix):

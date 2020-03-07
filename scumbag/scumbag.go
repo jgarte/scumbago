@@ -50,6 +50,7 @@ const (
 	cmdUptime     = cmdPrefix + "uptime"
 	cmdUrbanDict  = cmdPrefix + "ud"
 	cmdVersion    = cmdPrefix + "version"
+	cmdWeather    = cmdPrefix + "weather"
 	cmdWiki       = cmdPrefix + "wp"
 	cmdWolfram    = cmdPrefix + "wolfram"
 
@@ -388,6 +389,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 		command = NewLinkCommand(bot, conn, line)
 	case cmdVersion:
 		command = NewVersionCommand(bot, conn, line)
+	case cmdWeather:
+		command = NewWeatherCommand(bot, conn, line)
 	case cmdWiki:
 		command = NewWikiCommand(bot, conn, line)
 	case cmdWolfram:

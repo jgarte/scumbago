@@ -4,6 +4,7 @@ require (
 	github.com/Henry-Sarabia/apicalypse v1.0.1
 	github.com/Henry-Sarabia/blank v2.0.0+incompatible // indirect
 	github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6 // indirect
+	github.com/briandowns/openweathermap v0.13.0
 	github.com/cenkalti/backoff v2.1.0+incompatible // indirect
 	github.com/davidscholberg/go-durationfmt v0.0.0-20170122144659-64843a2083d3
 	github.com/dghubble/go-twitter v0.0.0-20181218060016-7ecc41c771b6

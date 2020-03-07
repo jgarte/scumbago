@@ -11,12 +11,11 @@ type BotConfig struct {
 	Servers      []*ServerConfig
 	Admins       []string
 	LogLevel     string
-	APIXU        *APIXUConfig
 	Database     *DatabaseConfig
-	BreweryDB    *BreweryDBConfig
 	IGDB         *IGDBConfig
 	News         *NewsConfig
 	OMDb         *OMDbConfig
+	OWM          *OWMConfig
 	Rollbar      *RollbarConfig
 	Twitter      *TwitterConfig
 	WolframAlpha *WolframAlphaConfig
@@ -44,16 +43,6 @@ type ChannelConfig struct {
 	SaveURLs bool
 }
 
-// APIXUConfig stores the APIXU API information.
-type APIXUConfig struct {
-	Key string
-}
-
-// BreweryDBConfig stores BreweryDB API information.
-type BreweryDBConfig struct {
-	Key string
-}
-
 // IGDBConfig stores IGDB.com API information.
 type IGDBConfig struct {
 	Key string
@@ -66,6 +55,11 @@ type NewsConfig struct {
 
 // OMDbConfig stores the OMDb API information.
 type OMDbConfig struct {
+	Key string
+}
+
+// OWMConfig stores OpenWeatherMap API information.
+type OWMConfig struct {
 	Key string
 }
 
