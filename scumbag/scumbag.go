@@ -36,6 +36,7 @@ const (
 	cmdPrefix = "?"
 
 	cmdAdmin      = cmdPrefix + "admin"
+	cmdCorona     = cmdPrefix + "corona"
 	cmdFiglet     = cmdPrefix + "fig"
 	cmdGame       = cmdPrefix + "game"
 	cmdGithub     = cmdPrefix + "gh"
@@ -361,6 +362,8 @@ func (bot *Scumbag) processCommands(conn *irc.Conn, line *irc.Line) {
 	switch commandName {
 	case cmdAdmin:
 		command = NewAdminCommand(bot, conn, line)
+	case cmdCorona:
+		command = NewCoronaCommand(bot, conn, line)
 	case cmdFiglet:
 		command = NewFigletCommand(bot, conn, line)
 	case cmdGame:
@@ -426,4 +429,13 @@ func getContentBytes(req *http.Request) ([]byte, error) {
 	}
 
 	return content, nil
+}
+
+func getResponse(requestURL string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", requestURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return http.DefaultClient.Do(req)
 }

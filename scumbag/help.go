@@ -17,6 +17,7 @@ type HelpCommand struct {
 
 var helpCommands = []string{
 	cmdFiglet,
+	cmdCorona,
 	cmdGame,
 	cmdGithub,
 	cmdHackerNews,
@@ -48,6 +49,8 @@ func (cmd *HelpCommand) Run(args ...string) {
 
 	helpPhrase := args[0]
 	switch helpPhrase {
+	case strings.TrimLeft(cmdCorona, cmdPrefix):
+		NewCoronaCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdFiglet, cmdPrefix):
 		NewFigletCommand(cmd.bot, cmd.conn, cmd.line).Help()
 	case strings.TrimLeft(cmdGame, cmdPrefix):

@@ -9,7 +9,9 @@ require (
 	github.com/davidscholberg/go-durationfmt v0.0.0-20170122144659-64843a2083d3
 	github.com/dghubble/go-twitter v0.0.0-20181218060016-7ecc41c771b6
 	github.com/dghubble/sling v1.2.0 // indirect
+	github.com/dustin/go-humanize v1.0.0
 	github.com/fluffle/goirc v1.0.1
+	github.com/gocarina/gocsv v0.0.0-20200309095354-8a990db7f06b
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/jzelinskie/geddit v0.0.0-20181001045958-34240685d019
 	github.com/kaelanb/newsapi-go v0.0.0-20180513212549-00c6a4ff2d43
