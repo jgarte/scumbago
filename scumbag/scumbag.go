@@ -25,7 +25,7 @@ import (
 )
 
 // Version is a rarely updated string...
-var Version = "1.11.0"
+var Version = "1.12.0"
 
 // BuildTag is updated from the current git SHA when the binary is built.
 var BuildTag = "HEAD"
