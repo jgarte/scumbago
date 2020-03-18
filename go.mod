@@ -3,6 +3,7 @@ module github.com/Oshuma/scumbago
 require (
 	github.com/Henry-Sarabia/apicalypse v1.0.1
 	github.com/Henry-Sarabia/blank v2.0.0+incompatible // indirect
+	github.com/Oshuma/corona v0.2.0
 	github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6 // indirect
 	github.com/briandowns/openweathermap v0.13.0
 	github.com/cenkalti/backoff v2.1.0+incompatible // indirect
