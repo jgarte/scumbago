@@ -4,6 +4,8 @@ github.com/Henry-Sarabia/blank v2.0.0+incompatible h1:JMl1li9aZ0XjcEv/2anvXe4pzv
 github.com/Henry-Sarabia/blank v2.0.0+incompatible/go.mod h1:EKLnM7Lq0E08WmivZuJoo099i07THd4ISgOBs3wOKTw=
 github.com/Oshuma/corona v0.2.0 h1:3lMHVH+mb1dYcBEElMtgO1zKnh2n4+g3Ei3QWTRLBXM=
 github.com/Oshuma/corona v0.2.0/go.mod h1:Djbd35o+yIn3LlZ24P6uBM4d6btr0H6j2Xic393obfw=
+github.com/Oshuma/corona v0.7.0 h1:P5c+4KjEh2/T6qZB46apGJIq4d1Gwqik3eXy70MlINw=
+github.com/Oshuma/corona v0.7.0/go.mod h1:IEpd7sLTQy/9IjpmbdN9wa+IIIDZceehHcyovXpfVNs=
 github.com/apixu/apixu-go v1.1.1 h1:2qb7cZ4uui/HKjNVsi0EVlU3Pnmq1gSFGoq5lXusT2s=
 github.com/apixu/apixu-go v1.1.1/go.mod h1:TSbBaAjTLCbvKwfyIMs9C8vqvFq4ov/TKUcv2mUN+Uk=
 github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6 h1:KXlsf+qt/X5ttPGEjR0tPH1xaWWoKBEg9Q1THAj2h3I=

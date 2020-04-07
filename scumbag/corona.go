@@ -9,13 +9,23 @@ import (
 	irc "github.com/fluffle/goirc/client"
 )
 
-const (
-	coronaBaseURL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/%s.csv"
-)
-
 var coronaHelp = []string{
 	fmt.Sprintf("%s us <state> -- US details; state optional.", cmdCorona),
 	fmt.Sprintf("%s <country>  -- Worldwide details; country optional.", cmdCorona),
+}
+
+type CoronaReport struct {
+	Title     string
+	Channel   string
+	Confirmed float64
+	Deaths    float64
+}
+
+func (r *CoronaReport) Details() string {
+	return strings.Join([]string{
+		fmt.Sprintf("Confirmed: %s", humanize.Comma(int64(r.Confirmed))),
+		fmt.Sprintf("Deaths: %s", humanize.Comma(int64(r.Deaths))),
+	}, " / ")
 }
 
 // CoronaCommand pulls data from https://github.com/CSSEGISandData/COVID-19
@@ -70,45 +80,50 @@ func (cmd *CoronaCommand) Help() {
 
 func (cmd *CoronaCommand) us(channel string, args []string) {
 	var title string
-	var confirmed, deaths, recovered int
+	var confirmed, deaths float64
 
 	if len(args) > 0 {
 		state := strings.Join(args, " ")
 
-		cases, err := corona.DailyByState(state)
-		if err == corona.ErrorNoCasesFound {
-			cmd.bot.Msg(cmd.conn, channel, "State Not Found: %s", state)
+		usCases, err := corona.DailyByCountryCode("US")
+		if err != nil {
+			cmd.bot.LogError("CoronaCommand.us()", err)
+			return
+		}
+
+		cases, err := usCases.FilterRegionName(state)
+		if err == corona.ErrorNoReportsFound {
+			cmd.bot.Msg(cmd.conn, channel, "State not found: %s", state)
 			return
 		} else if err != nil {
 			cmd.bot.LogError("CoronaCommand.us()", err)
 			return
 		}
 
-		title = fmt.Sprintf("%s, US Corona Report", cases.ProvinceState)
-		confirmed = cases.Confirmed
-		deaths = cases.Deaths
-		recovered = cases.Recovered
+		title = cases[0].Region.Name
+
+		for _, r := range cases {
+			confirmed += r.Confirmed
+			deaths += r.Deaths
+		}
 	} else {
-		title = "US Corona Report"
-
-		cases, err := corona.DailyByCountry("US")
-		if err == corona.ErrorNoCasesFound {
-			cmd.bot.Msg(cmd.conn, channel, "No data for US (something probably fucked up)")
-			return
-		} else if err != nil {
+		total, err := corona.TotalByCountryCode("US")
+		if err != nil {
 			cmd.bot.LogError("CoronaCommand.us()", err)
 			return
 		}
-
-		for _, c := range cases {
-			confirmed += c.Confirmed
-			deaths += c.Deaths
-			recovered += c.Recovered
-		}
+		title = "US Corona Report"
+		confirmed = total.Confirmed
+		deaths = total.Deaths
 	}
 
-	details := cmd.buildDetails(confirmed, deaths, recovered)
-	cmd.bot.Msg(cmd.conn, channel, "%s: %s", title, strings.Join(details, " / "))
+	r := &CoronaReport{
+		Title:     title,
+		Channel:   channel,
+		Confirmed: confirmed,
+		Deaths:    deaths,
+	}
+	cmd.sendReport(r)
 }
 
 func (cmd *CoronaCommand) country(channel string, args []string) {
@@ -118,8 +133,9 @@ func (cmd *CoronaCommand) country(channel string, args []string) {
 	}
 
 	country := strings.Join(args, " ")
-	cases, err := corona.DailyByCountry(country)
-	if err == corona.ErrorNoCasesFound {
+
+	total, err := corona.TotalByCountryName(country)
+	if err == corona.ErrorNoReportsFound {
 		cmd.bot.Msg(cmd.conn, channel, "Country Not Found: %s", country)
 		return
 	} else if err != nil {
@@ -127,17 +143,13 @@ func (cmd *CoronaCommand) country(channel string, args []string) {
 		return
 	}
 
-	title := cases[0].CountryRegion
-	var confirmed, deaths, recovered int
-
-	for _, c := range cases {
-		confirmed += c.Confirmed
-		deaths += c.Deaths
-		recovered += c.Recovered
+	r := &CoronaReport{
+		Title:     fmt.Sprintf("%s Corona Report", total.Country.Name),
+		Channel:   channel,
+		Confirmed: total.Confirmed,
+		Deaths:    total.Deaths,
 	}
-
-	details := cmd.buildDetails(confirmed, deaths, recovered)
-	cmd.bot.Msg(cmd.conn, channel, "%s: %s", title, strings.Join(details, " / "))
+	cmd.sendReport(r)
 }
 
 func (cmd *CoronaCommand) worldwide(channel string) {
@@ -147,21 +159,27 @@ func (cmd *CoronaCommand) worldwide(channel string) {
 		return
 	}
 
-	var confirmed, deaths, recovered int
-	for _, r := range cases {
-		confirmed += r.Confirmed
-		deaths += r.Deaths
-		recovered += r.Recovered
+	cases, err = cases.FilterRegionName("")
+	if err != nil {
+		cmd.bot.LogError("CoronaCommand.worldwide()", err)
+		return
 	}
 
-	details := cmd.buildDetails(confirmed, deaths, recovered)
-	cmd.bot.Msg(cmd.conn, channel, "Worldwide Corona Report: %s", strings.Join(details, " / "))
+	var confirmed, deaths float64
+	for _, c := range cases {
+		confirmed += c.Confirmed
+		deaths += c.Deaths
+	}
+
+	r := &CoronaReport{
+		Title:     "Worldwide Corona Report",
+		Channel:   channel,
+		Confirmed: confirmed,
+		Deaths:    deaths,
+	}
+	cmd.sendReport(r)
 }
 
-func (cmd *CoronaCommand) buildDetails(confirmed, deaths, recovered int) []string {
-	return []string{
-		fmt.Sprintf("Confirmed: %s", humanize.Comma(int64(confirmed))),
-		fmt.Sprintf("Deaths: %s", humanize.Comma(int64(deaths))),
-		fmt.Sprintf("Recovered: %s", humanize.Comma(int64(recovered))),
-	}
+func (cmd *CoronaCommand) sendReport(r *CoronaReport) {
+	cmd.bot.Msg(cmd.conn, r.Channel, "%s: %s", r.Title, r.Details())
 }
